@@ -1,8 +1,0 @@
-{
-	"BuildId": "47537391",
-	"Modules": 
-	{
-		"OpenTournament": "UnrealEditor-OpenTournament.dll",
-		"OpenTournamentEditor": "UnrealEditor-OpenTournamentEditor.dll"
-	}
-}

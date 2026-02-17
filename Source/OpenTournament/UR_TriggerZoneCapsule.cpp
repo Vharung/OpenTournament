@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -8,13 +8,11 @@
 
 #include "OpenTournament.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_TriggerZoneCapsule)
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-AUR_TriggerZoneCapsule::AUR_TriggerZoneCapsule(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
-    , CapsuleComponent(nullptr)
+AUR_TriggerZoneCapsule::AUR_TriggerZoneCapsule(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer),
+    CapsuleComponent(nullptr)
 {
     CapsuleComponent = Cast<UCapsuleComponent>(CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent")));
     CapsuleComponent->SetCapsuleSize(256.f, 128.f);

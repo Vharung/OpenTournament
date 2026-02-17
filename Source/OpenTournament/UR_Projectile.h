@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -11,8 +11,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Forward Declarations
 
-class UNiagaraComponent;
-class UFXSystemAsset;
 class UAudioComponent;
 class USphereComponent;
 class UStaticMeshComponent;
@@ -32,11 +30,6 @@ struct FReplicatedExplosionInfo
 
     UPROPERTY()
     FVector HitNormal;
-
-    FReplicatedExplosionInfo()
-        : HitLocation(0, 0, 0)
-        , HitNormal(0, 0, 0)
-    {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,38 +44,31 @@ public:
 
 protected:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
     virtual void BeginPlay() override;
-    virtual void Tick(float DeltaTime) override;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
 public:
+
     // Sphere collision component.
     UPROPERTY(VisibleDefaultsOnly, Category = "Projectile|Collision")
-    TObjectPtr<USphereComponent> CollisionComponent;
+    USphereComponent* CollisionComponent;
 
     // Projectile movement component.
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Movement")
-    TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent;
+    UProjectileMovementComponent* ProjectileMovementComponent;
 
-    // @! TODO : Deprecate - We can use NiagaraSystem for this
     // Projectile Mesh
     UPROPERTY(VisibleDefaultsOnly, Category = "Projectile|Mesh")
-    TObjectPtr<UStaticMeshComponent> StaticMeshComponent;
+    UStaticMeshComponent* StaticMeshComponent;
 
-    // @! TODO : Deprecate - We can use NiagaraSystem for this
     // Audio Component
     UPROPERTY(VisibleDefaultsOnly, Category = "Projectile|Audio")
-    TObjectPtr<UAudioComponent> AudioComponent;
+    UAudioComponent* AudioComponent;
 
-    // @! TODO : Deprecate - Use NiagaraSystem
     // Projectile Particles
     UPROPERTY(VisibleDefaultsOnly, Category = "Projectile|Particles")
-    TObjectPtr<UParticleSystemComponent> Particles;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Projectile|Particles")
-    TObjectPtr<UNiagaraComponent> ParticleComponent;
+    UParticleSystemComponent* Particles;
 
     /**
     * This should be enabled for lesser projectiles like spammable ones, to reduce network cost.
@@ -167,6 +153,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
 protected:
+
     /**
      * Replicate this var to ensure that when projectile explodes on server, it explodes on clients as well.
      * Most of the time however, it is expected to explode on client beforehand.
@@ -180,15 +167,16 @@ protected:
     UPROPERTY(ReplicatedUsing = OnRep_ServerExplosionInfo)
     FReplicatedExplosionInfo ServerExplosionInfo;
 
-    UPROPERTY()
-    float ClientExplosionTime;
-
     UFUNCTION()
-    virtual void OnRep_ServerExplosionInfo();
+    void OnRep_ServerExplosionInfo()
+    {
+        Explode(ServerExplosionInfo.HitLocation, ServerExplosionInfo.HitNormal);
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
 public:
+
     /**
     * Damage for direct hits and for actors within InnerSplashRadius if applicable.
     */
@@ -252,5 +240,5 @@ public:
     * Impact/explosion effect template.
     */
     UPROPERTY(EditAnywhere, Category = "Projectile|Particles")
-    UFXSystemAsset* ImpactTemplate;
+    UParticleSystem* ImpactTemplate;
 };

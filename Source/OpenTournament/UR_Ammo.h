@@ -1,73 +1,72 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/PrimitiveComponent.h"
+#include "Components/ShapeComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/AudioComponent.h"
 #include "GameFramework/Actor.h"
+#include "UR_Character.h"
+#include "Engine.h"
+#include "Engine/Canvas.h" // for FCanvasIcon
 
 #include "UR_Ammo.generated.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-class AUR_Weapon;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
-* Describes a type of ammo, and acts as a container when instanced.
-* Ammo types classes are referenced by ammo bases and weapons.
-* Ammo types are instanced and stored in their own array in InventoryComponent, independently from weapons.
-* Weapons can make use of multiple ammo types.
-* An ammo type can be shared across multiple weapons.
-*/
-UCLASS(Blueprintable, NotPlaceable)
-class OPENTOURNAMENT_API AUR_Ammo
-    : public AActor
+UCLASS()
+class OPENTOURNAMENT_API AUR_Ammo : public AActor
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
+	
+public:	
+	// Sets default values for this actor's properties
+	AUR_Ammo(const FObjectInitializer& ObjectInitializer);
+	
+	UPROPERTY(EditAnywhere)
+	UShapeComponent* Tbox;
 
-    AUR_Ammo();
+	UPROPERTY(EditAnywhere)
+	UAudioComponent* Sound;
 
-    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	UPROPERTY(EditAnywhere)
+	FString AmmoName = FString(TEXT(""));
 
-public:
-    /**
-    * Ammo name.
-    * Not sure if useful.
-    */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-    FText AmmoName;
+	UPROPERTY(EditAnywhere)
+	AUR_Character* PlayerController;
 
-    /**
-    * Maximum ammo reachable by picking up ammo packs.
-    * Should be >= WeaponPickupMaxAmmo.
-    */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-    int32 MaxAmmo;
+	bool bItemIsWithinRange = false;
 
-    /**
-    * Current ammo amount.
-    */
-    UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_AmmoCount)
-    int32 AmmoCount;
+	void Pickup();
 
-public:
-    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-    virtual void StackAmmo(int32 InAmount, AUR_Weapon* FromWeapon = nullptr);
+	void GetPlayer(AActor* Player);
 
-    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-    virtual void ConsumeAmmo(int32 Amount = 1);
+	UPROPERTY(EditAnywhere)
+	int32 amount;
 
-    /**
-    * Set ammo count to desired value regardless of MaxAmmo.
-    * Still hard-capped between 0 and 999.
-    */
-    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-    virtual void SetAmmoCount(int32 NewAmmoCount);
+
+	UPROPERTY(EditAnywhere)
+		UStaticMeshComponent* SM_TBox;
+	UFUNCTION()
+		void OnTriggerEnter(class UPrimitiveComponent* HitComp, class AActor* Other, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+		void OnTriggerExit(class UPrimitiveComponent* HitComp, class AActor* Other, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
-    UFUNCTION()
-    virtual void OnRep_AmmoCount(int32 OldAmmoCount);
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	/** weapon mesh: 3rd person view */
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+		UStaticMeshComponent* AmmoMesh;
+
+	/** Returns Mesh3P subobject **/
+	FORCEINLINE UStaticMeshComponent* GetMesh() const { return AmmoMesh; }
+
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 };

@@ -1,29 +1,23 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 #include "UR_FireModeZoom.h"
 
+#include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Camera/CameraComponent.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Net/UnrealNetwork.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Camera/CameraComponent.h"
 
-#include "UR_Character.h"
 #include "UR_FunctionLibrary.h"
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_FireModeZoom)
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
+#include "UR_Character.h"
 
 void UUR_FireModeZoom::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     //TODO: this should only replicate to spectators if possible
-    DOREPLIFETIME_CONDITION(ThisClass, bZooming, COND_SkipOwner);
+    DOREPLIFETIME_CONDITION(UUR_FireModeZoom, bZooming, COND_SkipOwner);
 }
 
 template<class T> T* UUR_FireModeZoom::GetInstigator()
@@ -32,7 +26,7 @@ template<class T> T* UUR_FireModeZoom::GetInstigator()
     {
         return GetOwner()->GetInstigator<T>();
     }
-    return nullptr;
+    return NULL;
 }
 
 void UUR_FireModeZoom::RequestStartFire_Implementation()
@@ -41,7 +35,7 @@ void UUR_FireModeZoom::RequestStartFire_Implementation()
     if (AUR_Character* URChar = GetInstigator<AUR_Character>())
     {
         bool bActivate = (URChar->CurrentZoomInterface != this);
-        URChar->RegisterZoomInterface(bActivate ? this : nullptr);
+        URChar->RegisterZoomInterface(bActivate ? this : NULL);
     }
 }
 
@@ -52,7 +46,7 @@ void UUR_FireModeZoom::Deactivate()
     // Deactivate zoom when the component is deactivated
     if (AUR_Character* URChar = GetInstigator<AUR_Character>())
     {
-        URChar->RegisterZoomInterface(nullptr);
+        URChar->RegisterZoomInterface(NULL);
     }
 }
 
@@ -104,7 +98,7 @@ void UUR_FireModeZoom::AIF_InternalDeactivate_Implementation()
     if (ZoomWidget)
     {
         ZoomWidget->RemoveFromParent();
-        ZoomWidget = nullptr;
+        ZoomWidget = NULL;
     }
 
     UGameplayStatics::PlaySound2D(this, ZoomOutSound);
@@ -206,8 +200,8 @@ void UUR_FireModeZoom::ServerSetZoomState_Implementation(bool bNewZooming)
 
 void UUR_FireModeZoom::OnRep_bZooming()
 {
-    if (auto* URChar = GetInstigator<AUR_Character>())
+    if (AUR_Character* URChar = GetInstigator<AUR_Character>())
     {
-        URChar->RegisterZoomInterface(bZooming ? this : nullptr);
+        URChar->RegisterZoomInterface(bZooming ? this : NULL);
     }
 }

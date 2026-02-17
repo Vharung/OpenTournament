@@ -1,12 +1,12 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/IUserObjectListEntry.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/IUserObjectListEntry.h"
 
 #include "UR_Widget_ControlsListEntry.generated.h"
 
@@ -18,19 +18,18 @@ class UTextBlock;
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- *
+ * 
  */
 UCLASS()
 class OPENTOURNAMENT_API UUR_Widget_ControlsListEntry : public UUserWidget, public IUserObjectListEntry
 {
     GENERATED_BODY()
-
+    
 public:
     UUR_Widget_ControlsListEntry(const FObjectInitializer& ObjectInitializer);
 
-    virtual void NativeConstruct() override;
-
-    virtual void NativeOnListItemObjectSet(UObject* InObject) override;
+    void NativeConstruct() override;
+    void NativeOnListItemObjectSet(UObject* InObject) override;
 
     UPROPERTY(meta = (BindWidget))
     UTextBlock* EntryName;
@@ -38,8 +37,7 @@ public:
     UPROPERTY(meta = (BindWidget))
     UInputKeySelector* EntryKeySelector;
 
-    UPROPERTY()
-    TWeakObjectPtr<UObject> Item;
+    UObject* Item;
 
     UFUNCTION()
     void OnEntryKeySelectorKeyChanged(FInputChord SelectedKey);
@@ -47,8 +45,10 @@ public:
     UFUNCTION()
     void OnEntryKeySelectorIsSelectingKeyChanged();
 
+
 private:
-    void UpdateEntry() const;
+
+    void UpdateEntry();
 
     bool IsSelectingKey;
 };

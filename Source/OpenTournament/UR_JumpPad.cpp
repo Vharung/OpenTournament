@@ -1,10 +1,8 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_JumpPad.h"
-
-#include <Engine/World.h>
 
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -15,12 +13,9 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "NavLinkComponent.h"
 
 #include "OpenTournament.h"
 #include "UR_Character.h"
-#include "UR_LogChannels.h"
-#include "AI/UR_NavigationUtilities.h"
 
 #if WITH_EDITOR
 #include "Components/SplineComponent.h"
@@ -30,26 +25,24 @@
 #include "Misc/AutomationTest.h"
 #endif
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_JumpPad)
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-AUR_JumpPad::AUR_JumpPad(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
-    , Destination(FTransform())
-    , bLockDestination(true)
-    , bRetainHorizontalVelocity(false)
-    , JumpActorClass(AUR_Character::StaticClass())
-    , JumpDuration(2.f)
-    , JumpPadLaunchSound(nullptr)
-    , JumpPadLaunchParticleClass(nullptr)
-    , SplineProjectionDuration(2.f)
-    , bRequiredTagsExact(false)
-    , bExcludedTagsExact(true)
-    , bUseJumpPadMaterialInstance(true)
-    , JumpPadMaterialInstance(nullptr)
-    , JumpPadMaterialIndex(0)
-    , JumpPadMaterialParameterName("Color")
+AUR_JumpPad::AUR_JumpPad(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer),
+    Destination(FTransform()),
+    bLockDestination(true),
+    bRetainHorizontalVelocity(false),
+    JumpActorClass(AUR_Character::StaticClass()),
+    JumpDuration(2.f),
+    JumpPadLaunchSound(nullptr),
+    JumpPadLaunchParticleClass(nullptr),
+    SplineProjectionDuration(2.f),
+    bRequiredTagsExact(false),
+    bExcludedTagsExact(true),
+    bUseJumpPadMaterialInstance(true),
+    JumpPadMaterialInstance(nullptr),
+    JumpPadMaterialIndex(0),
+    JumpPadMaterialParameterName("Color")
 {
     PrimaryActorTick.bCanEverTick = false;
     PrimaryActorTick.bStartWithTickEnabled = false;
@@ -63,7 +56,7 @@ AUR_JumpPad::AUR_JumpPad(const FObjectInitializer& ObjectInitializer)
     CapsuleComponent->SetGenerateOverlapEvents(true);
     CapsuleComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
     CapsuleComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-    CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnTriggerEnter);
+    CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &AUR_JumpPad::OnTriggerEnter);
 
     MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMeshComponent"));
     MeshComponent->SetupAttachment(RootComponent);
@@ -73,11 +66,6 @@ AUR_JumpPad::AUR_JumpPad(const FObjectInitializer& ObjectInitializer)
 
     ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
     ParticleSystemComponent->SetupAttachment(RootComponent);
-
-    NavLink = CreateDefaultSubobject<UNavLinkComponent>("NavLink");
-    NavLink->SetupAttachment(CapsuleComponent);
-    NavLink->Links[0].Left = FVector::ZeroVector;
-    NavLink->Links[0].Direction = ENavLinkDirection::LeftToRight;
 
     Destination = GetActorTransform();
     Destination.SetLocation(Destination.GetLocation() + FVector(0, 0, 1000));
@@ -89,11 +77,6 @@ AUR_JumpPad::AUR_JumpPad(const FObjectInitializer& ObjectInitializer)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-
-void AUR_JumpPad::OnConstruction(const FTransform& Transform)
-{
-    NavLink->Links[0].Right = Destination.GetLocation();
-}
 
 void AUR_JumpPad::BeginPlay()
 {
@@ -114,11 +97,10 @@ void AUR_JumpPad::OnTriggerEnter(UPrimitiveComponent* HitComp, AActor* Other, UP
     {
         if (IsPermittedToJump(TargetCharacter))
         {
-            GAME_LOG(LogGame, Log, "Entered JumpPad (%s)", *GetName());
+            GAME_LOG(Game, Log, "Entered JumpPad (%s)", *GetName());
 
             TargetCharacter->LaunchCharacter(CalculateJumpVelocity(TargetCharacter), !bRetainHorizontalVelocity, true);
             PlayJumpPadEffects();
-            UUR_NavigationUtilities::ForceReachedDestinationWithin(TargetCharacter, HitComp->GetNavigationBounds());
         }
     }
 }
@@ -260,7 +242,7 @@ void AUR_JumpPad::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
         SplineProjectionDuration = JumpDuration;
         UpdateSpline();
     }
-
+    
     if (PropertyName == GET_MEMBER_NAME_CHECKED(AUR_JumpPad, Destination)
         || PropertyName == GET_MEMBER_NAME_CHECKED(AUR_JumpPad, SplineProjectionDuration))
     {
@@ -311,3 +293,18 @@ void AUR_JumpPad::EditorApplyScale(const FVector& DeltaScale, const FVector* Piv
     }
 }
 #endif
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if WITH_DEV_AUTOMATION_TESTS
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpenTournamentJumpPadTest, "OpenTournament.Feature.Levels.LevelFeatures.Actor", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FOpenTournamentJumpPadTest::RunTest(const FString& Parameters)
+{
+    // TODO : Automated Tests
+
+    return true;
+}
+
+#endif // WITH_DEV_AUTOMATION_TESTS

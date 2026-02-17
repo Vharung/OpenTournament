@@ -1,12 +1,12 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagAssetInterface.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagAssetInterface.h"
 
 #include "UR_JumpPad.generated.h"
 
@@ -20,7 +20,6 @@ class UParticleSystemComponent;
 class USplineComponent;
 class USoundBase;
 class UStaticMeshComponent;
-class UNavLinkComponent;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,12 +38,13 @@ class UNavLinkComponent;
 */
 UCLASS(Blueprintable, Abstract, HideCategories = (Actor, Rendering, Replication, Collision, Input, LOD, Cooking))
 class OPENTOURNAMENT_API AUR_JumpPad : public AActor,
-                                       public IGameplayTagAssetInterface
+    public IGameplayTagAssetInterface
 {
     GENERATED_BODY()
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 public:
+
     /**
     * Root Component
     */
@@ -62,7 +62,7 @@ public:
     */
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "JumpPad")
     UCapsuleComponent* CapsuleComponent;
-
+    
     /*
     * Audio Component
     */
@@ -75,14 +75,10 @@ public:
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "JumpPad")
     UParticleSystemComponent* ParticleSystemComponent;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "JumpPad")
-    UNavLinkComponent* NavLink;
-
-#if WITH_EDITORONLY_DATA
+#if WITH_EDITOR
     /*
     * Spline Component
     */
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "JumpPad")
     USplineComponent* SplineComponent;
 #endif
 
@@ -140,13 +136,12 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
 public:
+
     AUR_JumpPad(const FObjectInitializer& ObjectInitializer);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    virtual void OnConstruction(const FTransform& Transform) override;
-
-    virtual void BeginPlay() override;
+    void BeginPlay() override;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -155,9 +150,9 @@ public:
     */
     UFUNCTION()
     void OnTriggerEnter(class UPrimitiveComponent* HitComp, class AActor* Other, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+    
     /**
-    * Is this actor permitted to jump?
+    * Is this actor permitted to jump? 
     */
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, BlueprintCallable, Category = "JumpPad")
     bool IsPermittedToJump(const AActor* TargetActor) const;
@@ -195,11 +190,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////
     // Gameplay Tags
 
-    virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override
-    {
-        TagContainer = GameplayTags;
-        return;
-    }
+    virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; return; }
 
     /**
     * Gameplay Tags for this Actor

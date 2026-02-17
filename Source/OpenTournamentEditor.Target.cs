@@ -1,16 +1,14 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 using UnrealBuildTool;
-using System.Collections.Generic;
 
 public class OpenTournamentEditorTarget : TargetRules
 {
     public OpenTournamentEditorTarget(TargetInfo Target) : base(Target)
     {
+        DefaultBuildSettings = BuildSettingsVersion.Latest;
         Type = TargetType.Editor;
-
-        ExtraModuleNames.AddRange(new string[] { "OpenTournament", "OpenTournamentEditor" });
-
-        OpenTournamentTarget.ApplySharedOpenTournamentTargetSettings(this);
+        LinkType = TargetLinkType.Modular;
+        ExtraModuleNames.Add("OpenTournament");
     }
 }

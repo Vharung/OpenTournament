@@ -1,23 +1,17 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_Projectile.h"
 
-#include <NiagaraComponent.h>
-#include <NiagaraFunctionLibrary.h>
-#include <Components/AudioComponent.h>
-#include <Components/SphereComponent.h>
-#include <Components/StaticMeshComponent.h>
-#include <Engine/World.h>
-#include <GameFramework/DamageType.h>
-#include <GameFramework/Pawn.h>
-#include <GameFramework/ProjectileMovementComponent.h>
-#include <Kismet/GameplayStatics.h>
-#include <Net/UnrealNetwork.h>
-#include <Particles/ParticleSystemComponent.h>
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_Projectile)
+#include "Components/AudioComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "GameFramework/DamageType.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,8 +23,8 @@ AUR_Projectile::AUR_Projectile(const FObjectInitializer& ObjectInitializer)
     CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
     CollisionComponent->SetGenerateOverlapEvents(true);
     CollisionComponent->InitSphereRadius(15.0f);
-    CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnOverlap);
-    CollisionComponent->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
+    CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AUR_Projectile::OnOverlap);
+    CollisionComponent->OnComponentHit.AddDynamic(this, &AUR_Projectile::OnHit);
     bIgnoreInstigator = true;
     bCollideInstigatorAfterBounce = true;
 
@@ -47,8 +41,6 @@ AUR_Projectile::AUR_Projectile(const FObjectInitializer& ObjectInitializer)
     StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
     StaticMeshComponent->SetupAttachment(RootComponent);
     StaticMeshComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
-    StaticMeshComponent->SetSimulatePhysics(false);
-    StaticMeshComponent->SetAbsolute(false, false, false);
 
     AudioComponent = ObjectInitializer.CreateDefaultSubobject<UAudioComponent>(this, TEXT("AudioComponent"));
     AudioComponent->SetupAttachment(RootComponent);
@@ -56,14 +48,10 @@ AUR_Projectile::AUR_Projectile(const FObjectInitializer& ObjectInitializer)
     Particles = ObjectInitializer.CreateDefaultSubobject<UParticleSystemComponent>(this, TEXT("Particles"));
     Particles->SetupAttachment(RootComponent);
 
-    ParticleComponent = ObjectInitializer.CreateDefaultSubobject<UNiagaraComponent>(this, TEXT("ParticleComponent"));
-    ParticleComponent->SetupAttachment(RootComponent);
-
     SetCanBeDamaged(false);
 
     bReplicates = true;
     bCutReplicationAfterSpawn = false;
-    ClientExplosionTime = -10.f;
 
     BaseDamage = 100.f;
     SplashRadius = 0.0f;
@@ -81,7 +69,7 @@ void AUR_Projectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    DOREPLIFETIME_CONDITION(ThisClass, ServerExplosionInfo, COND_None);
+    DOREPLIFETIME_CONDITION(AUR_Projectile, ServerExplosionInfo, COND_None);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,18 +82,7 @@ void AUR_Projectile::BeginPlay()
 
     if (ProjectileMovementComponent->bShouldBounce)
     {
-        ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ThisClass::OnBounceInternal);
-    }
-}
-
-void AUR_Projectile::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-
-    if (ProjectileMovementComponent->bRotationFollowsVelocity)
-    {
-        StaticMeshComponent->SetWorldRotation(ProjectileMovementComponent->Velocity.Rotation());
-        Particles->SetWorldRotation(ProjectileMovementComponent->Velocity.Rotation());
+        ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &AUR_Projectile::OnBounceInternal);
     }
 }
 
@@ -128,7 +105,7 @@ void AUR_Projectile::OnOverlap_Implementation(UPrimitiveComponent* OverlappedCom
         {
             DealPointDamage(OtherActor, SweepResult);
         }
-
+        
         Explode(bFromSweep ? FVector(SweepResult.Location.X, SweepResult.Location.Y, SweepResult.Location.Z) : GetActorLocation(), SweepResult.ImpactNormal);
     }
 }
@@ -136,7 +113,7 @@ void AUR_Projectile::OnOverlap_Implementation(UPrimitiveComponent* OverlappedCom
 bool AUR_Projectile::OverlapShouldExplodeOn_Implementation(AActor* Other)
 {
     //NOTE: here we can implement team projectiles going through teammates
-    return Other && Other->CanBeDamaged() && (!bIgnoreInstigator || Other != Cast<APawn>(GetInstigator()));
+    return Other && Other->CanBeDamaged() && (!bIgnoreInstigator || Other != GetInstigator());
 }
 
 void AUR_Projectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
@@ -216,8 +193,7 @@ void AUR_Projectile::DealSplashDamage()
     TArray<AActor*> IgnoreActors;
     IgnoreActors.Add(this);
 
-    UGameplayStatics::ApplyRadialDamageWithFalloff
-    (
+    UGameplayStatics::ApplyRadialDamageWithFalloff(
         this,
         BaseDamage,
         SplashMinimumDamage,
@@ -233,83 +209,24 @@ void AUR_Projectile::DealSplashDamage()
     );
 }
 
-/**
-* When we are bNetTemporary, replication link is cut after spawn, and client is fully responsible for exploding/destroying projectile.
-*
-* When we are not, there are 4 explosion scenarios to handle :
-*
-* (1) Explode on client before receiving ServerExplosionInfo.
-*     > Play explosion, hide projectile, and wait for server confirmation.
-*     > We will either receive ServerExplosionInfo soon (confirm case), or much later (unreg case).
-*
-* (2) Explode on client after receiving ServerExplosionInfo.
-*     > This should not happen because we disable simulation in case (3).
-*
-* (3) Receive ServerExplosionInfo before exploded on client.
-*     > Play explosion, stop simulating and destroy when possible.
-*     (note: client cannot destroy as long as replication link exists)
-*
-* (4) Receive ServerExplosionInfo after exploded on client.
-*     > See case (1), this is either a confirmation, or an unreg case.
-*     > In unreg case, we should play the real explosion now.
-*/
-
-void AUR_Projectile::OnRep_ServerExplosionInfo()
-{
-    //UKismetSystemLibrary::PrintString(this, TEXT("OnRep_ServerExplosionInfo"));
-
-    // If we received server explosion later than 200ms after exploding on client
-    if (auto World = GetWorld())
-    {
-        if (World->TimeSince(ClientExplosionTime) > 0.200f)
-        {
-            // Play explosion again
-            Explode(ServerExplosionInfo.HitLocation, ServerExplosionInfo.HitNormal);
-        }
-    }
-
-    // Either way, stop simulating and wait for server destruction (client cannot destroy networked actor).
-    SetActorHiddenInGame(true);
-    SetActorEnableCollision(false);
-    ProjectileMovementComponent->StopSimulating(FHitResult());
-}
-
 void AUR_Projectile::Explode(const FVector& HitLocation, const FVector& HitNormal)
 {
-    //UKismetSystemLibrary::PrintString(this, TEXT("Explode"));
-
     PlayImpactEffects(HitLocation, HitNormal);
-
-    if (bNetTemporary || GetNetMode() == NM_Standalone)
-    {
-        Destroy();
-        return;
-    }
 
     if (HasAuthority())
     {
-        //UKismetSystemLibrary::PrintString(this, TEXT("HasAuthority > ServerExplosionInfo"));
-
         ServerExplosionInfo.HitLocation = HitLocation;
         ServerExplosionInfo.HitNormal = HitNormal;
         ForceNetUpdate();
 
         SetActorEnableCollision(false);
         ProjectileMovementComponent->StopSimulating(FHitResult());
-
-        // Give 200ms to replicate explosion before destroy
-        SetLifeSpan(0.200f);
+        //SetActorHiddenInGame(true);
+        SetLifeSpan(0.2f);
     }
     else
     {
-        //UKismetSystemLibrary::PrintString(this, TEXT("Client > Hide"));
-
-        ClientExplosionTime = GetWorld()->GetTimeSeconds();
-
-        // On networked client, hide projectile and collision but continue simulating.
-        // If we don't receive server confirmation, we might want to re-show projectile after a delay (TODO).
-        SetActorHiddenInGame(true);
-        SetActorEnableCollision(false);
+        Destroy();
     }
 }
 
@@ -320,18 +237,10 @@ void AUR_Projectile::PlayImpactEffects_Implementation(const FVector& HitLocation
         //TODO: attenuation & concurrency settings, unless we do that in BP/SoundCue?
         UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, HitLocation);
 
-        if (UParticleSystem* CascadeTemplate = Cast<UParticleSystem>(ImpactTemplate))
-        {
-            UGameplayStatics::SpawnEmitterAtLocation
-            (
-                GetWorld(),
-                CascadeTemplate,
-                FTransform(HitNormal.Rotation(), HitLocation, GetActorScale3D())
-            );
-        }
-        else if (UNiagaraSystem* NS = Cast<UNiagaraSystem>(ImpactTemplate))
-        {
-            UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS, HitLocation, HitNormal.Rotation(), GetActorScale3D());
-        }
+        UGameplayStatics::SpawnEmitterAtLocation(
+            GetWorld(),
+            ImpactTemplate,
+            FTransform(HitNormal.Rotation(), HitLocation, GetActorScale3D())
+        );
     }
 }

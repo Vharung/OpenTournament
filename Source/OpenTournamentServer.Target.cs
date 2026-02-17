@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -6,7 +6,6 @@ public class OpenTournamentServerTarget : TargetRules
 {
     public OpenTournamentServerTarget(TargetInfo Target) : base(Target)
     {
-	    IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
         DefaultBuildSettings = BuildSettingsVersion.Latest;
         Type = TargetType.Server;
         LinkType = TargetLinkType.Modular;

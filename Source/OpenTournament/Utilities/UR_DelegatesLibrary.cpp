@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -7,25 +7,12 @@
 #include "Engine.h"
 #include "UnrealClient.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_DelegatesLibrary)
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
 UUR_DelegatesLibrary::UUR_DelegatesLibrary()
 {
-    if (GEngine)
-    {
-        if (const auto GViewport = GEngine->GameViewport.Get())
-        {
-            if (const auto Viewport = GViewport->Viewport)
-            {
-                Viewport->ViewportResizedEvent.AddUObject(this, &UUR_DelegatesLibrary::InternalOnViewportResized);
-            }
-        }
-    }
+    GEngine->GameViewport->Viewport->ViewportResizedEvent.AddUObject(this, &UUR_DelegatesLibrary::InternalOnViewportResized);
 }
 
-void UUR_DelegatesLibrary::InternalOnViewportResized(FViewport* Viewport, uint32 Param) const
+void UUR_DelegatesLibrary::InternalOnViewportResized(FViewport* Viewport, uint32 Param)
 {
     if (GEngine->GameViewport)
     {

@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -8,38 +8,31 @@
 #include "Components/BoxComponent.h"
 #include "Logging/MessageLog.h"
 #include "Logging/TokenizedMessage.h"
+#include "Misc/MapErrors.h"
 #include "Misc/UObjectToken.h"
 #include "Net/UnrealNetwork.h"
 
 #include "OpenTournament.h"
 #include "UR_Character.h"
 
-#if WITH_EDITOR
-#include "Misc/MapErrors.h"
-#endif // WITH_EDITOR
-
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
 #endif
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_TriggerZone)
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define LOCTEXT_NAMESPACE "TriggerZone"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-AUR_TriggerZone::AUR_TriggerZone(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
-    , ShapeComponent(nullptr)
-    , TriggerActorClass(AActor::StaticClass())
-    , TriggerActors()
-    , GameplayTags()
-    , bRequiredTagsExact(false)
-    , RequiredTags()
-    , bExcludedTagsExact(true)
-    , ExcludedTags()
+AUR_TriggerZone::AUR_TriggerZone(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer),
+    ShapeComponent(nullptr),
+    TriggerActorClass(AActor::StaticClass()),
+    TriggerActors(),
+    GameplayTags(),
+    bRequiredTagsExact(false),
+    RequiredTags(),
+    bExcludedTagsExact(true),
+    ExcludedTags()
 {
     TriggerActors.Reserve(4);
 }
@@ -57,14 +50,10 @@ void AUR_TriggerZone::PostInitializeComponents()
 
     if (ShapeComponent)
     {
-        ShapeComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnZoneEnter);
-        ShapeComponent->OnComponentEndOverlap.AddUniqueDynamic(this, &ThisClass::OnZoneExit);
+        ShapeComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &AUR_TriggerZone::OnZoneEnter);
+        ShapeComponent->OnComponentEndOverlap.AddUniqueDynamic(this, &AUR_TriggerZone::OnZoneExit);
     }
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if WITH_EDITOR
 
 void AUR_TriggerZone::CheckForErrors()
 {
@@ -75,12 +64,10 @@ void AUR_TriggerZone::CheckForErrors()
         FFormatNamedArguments Arguments;
         Arguments.Add(TEXT("ActorName"), FText::FromString(GetPathName()));
         MapCheck.Warning()
-                ->AddToken(FUObjectToken::Create(this))
-                ->AddToken(FTextToken::Create(FText::Format(LOCTEXT("MapCheck_Message_TriggerZone", "{ActorName} : TriggerZone actor has NULL ShapeComponent property - please add one."), Arguments)));
+            ->AddToken(FUObjectToken::Create(this))
+            ->AddToken(FTextToken::Create(FText::Format(LOCTEXT("MapCheck_Message_TriggerZone", "{ActorName} : TriggerZone actor has NULL ShapeComponent property - please add one."), Arguments)));
     }
 }
-
-#endif // WITH_EDITOR
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -148,7 +135,7 @@ bool AUR_TriggerZone::IsTriggerActor_Implementation(const AActor* InActor) const
 
         return IsTriggerByGameplayTags(TargetTags);
     }
-
+    
     return true;
 }
 
@@ -172,13 +159,13 @@ bool AUR_TriggerZone::CanEditChange(const FProperty* InProperty) const
     const bool ParentVal = Super::CanEditChange(InProperty);
 
     // Can we edit bRequiredTagsExact?
-    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(ThisClass, bRequiredTagsExact))
+    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(AUR_TriggerZone, bRequiredTagsExact))
     {
         return RequiredTags.Num() > 0;
     }
 
     // Can we edit bExcludedTagsExact?
-    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(ThisClass, bExcludedTagsExact))
+    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(AUR_TriggerZone, bExcludedTagsExact))
     {
         return ExcludedTags.Num() > 0;
     }
@@ -187,4 +174,17 @@ bool AUR_TriggerZone::CanEditChange(const FProperty* InProperty) const
 }
 #endif
 
-#undef LOCTEXT_NAMESPACE
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if WITH_DEV_AUTOMATION_TESTS
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpenTournamentTriggerZoneTest, "OpenTournament.Feature.Levels.LevelFeatures.Actor", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FOpenTournamentTriggerZoneTest::RunTest(const FString& Parameters)
+{
+    // TODO : Automated Tests
+
+    return true;
+}
+
+#endif // WITH_DEV_AUTOMATION_TESTS

@@ -1,11 +1,11 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_Weap_Shotgun.h"
 
-#include "UR_FunctionLibrary.h"
 #include "UR_Projectile.h"
+#include "UR_FunctionLibrary.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -13,6 +13,7 @@ AUR_Weap_Shotgun::AUR_Weap_Shotgun(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
 {
     WeaponName = "Shotgun";
+    AmmoName = "Shotgun";
 
     SpawnBoxes = {
         { FVector(5.0f, 0.0f, 0.0f), FVector(5.f, 15.f, 15.f), 2 },

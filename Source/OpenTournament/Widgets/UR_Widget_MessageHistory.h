@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -6,7 +6,6 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/UR_Widget_BaseMenu.h"
-
 #include "UR_Widget_MessageHistory.generated.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

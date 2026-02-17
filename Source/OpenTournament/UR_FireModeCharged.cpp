@@ -1,24 +1,17 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 #include "UR_FireModeCharged.h"
 
 #include "Net/UnrealNetwork.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
-#include "UR_LogChannels.h"
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_FireModeCharged)
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UUR_FireModeCharged::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    DOREPLIFETIME_CONDITION(ThisClass, ChargeLevel, COND_InitialOnly);
-    DOREPLIFETIME_CONDITION(ThisClass, ChargePausedAt, COND_None);
+    DOREPLIFETIME_CONDITION(UUR_FireModeCharged, ChargeLevel, COND_InitialOnly);
+    DOREPLIFETIME_CONDITION(UUR_FireModeCharged, ChargePausedAt, COND_None);
 }
 
 

@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -13,6 +13,7 @@ AUR_Weap_RocketLauncher::AUR_Weap_RocketLauncher(const FObjectInitializer& Objec
     : Super(ObjectInitializer)
 {
     WeaponName = "Rocket Launcher";
+    AmmoName = "Rocket";
 
     ChargedFireMode = CreateDefaultSubobject<UUR_FireModeCharged>(TEXT("ChargedFireMode"));
     ChargedFireMode->Index = 1;

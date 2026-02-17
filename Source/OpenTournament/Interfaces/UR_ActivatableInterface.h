@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 #pragma once
 
@@ -13,7 +13,6 @@ class UUR_ActivatableInterface : public UInterface
 	GENERATED_BODY()
 };
 
-// @! TODO Need to evaluate this design as this interface has state on it, not sure we want this
 /**
  * Represents an object that can be activated, deactivated, toggled, and tracks its status.
  *
@@ -34,10 +33,10 @@ public:
     void AIF_Activate(bool bReset = false);
     virtual void AIF_Activate_Implementation(bool bReset)
     {
-        if (bReset || !bAIF_BActive)
+        if (bReset || !AIF_bActive)
         {
             Execute_AIF_InternalActivate(Cast<UObject>(this));
-            bAIF_BActive = true;
+            AIF_bActive = true;
         }
     }
 
@@ -45,10 +44,10 @@ public:
     void AIF_Deactivate(bool bReset = false);
     virtual void AIF_Deactivate_Implementation(bool bReset)
     {
-        if (bReset || bAIF_BActive)
+        if (bReset || AIF_bActive)
         {
             Execute_AIF_InternalDeactivate(Cast<UObject>(this));
-            bAIF_BActive = false;
+            AIF_bActive = false;
         }
     }
 
@@ -63,20 +62,20 @@ public:
     bool AIF_IsActive();
     virtual bool AIF_IsActive_Implementation()
     {
-        return bAIF_BActive;
+        return AIF_bActive;
     }
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     bool AIF_Toggle();
     virtual bool AIF_Toggle_Implementation()
     {
-        Execute_AIF_SetActive(Cast<UObject>(this), !bAIF_BActive, false);
-        return bAIF_BActive;
+        Execute_AIF_SetActive(Cast<UObject>(this), !AIF_bActive, false);
+        return AIF_bActive;
     }
 
 protected:
 
-    bool bAIF_BActive = false;
+    bool AIF_bActive;
 
     UFUNCTION(BlueprintNativeEvent)
     void AIF_InternalActivate();

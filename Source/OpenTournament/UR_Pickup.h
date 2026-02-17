@@ -1,15 +1,14 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagAssetInterface.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagAssetInterface.h"
 
 #include "Enums/UR_PickupState.h"
-
 #include "UR_Pickup.generated.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,11 +17,8 @@ class UCapsuleComponent;
 class UParticleSystemComponent;
 class UPrimitiveComponent;
 class AUR_Character;
-class UFXSystemAsset;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPickedUpSignature, AUR_Pickup*, Pickup, APawn*, Recipient);
 
 /**
  * Pickup Base Class - Actor representing a given Inventory class within the game world.
@@ -30,34 +26,34 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPickedUpSignature, AUR_Pickup*, 
  *                     for respawning, etc.
  */
 UCLASS(Abstract, Blueprintable)
-class OPENTOURNAMENT_API AUR_Pickup
-    : public AActor,
-      public IGameplayTagAssetInterface
+class OPENTOURNAMENT_API AUR_Pickup : public AActor,
+    public IGameplayTagAssetInterface
 {
     GENERATED_BODY()
+    
+public:	
 
-public:
     AUR_Pickup(const FObjectInitializer& ObjectInitializer);
-
+    
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
     * Collision Component of Pickup
     */
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Pickup")
-    TObjectPtr<UCapsuleComponent> CollisionComponent;
+    UCapsuleComponent* CollisionComponent;
 
     /**
     * Mesh Representation of Pickup
     */
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Pickup")
-    TObjectPtr<UStaticMeshComponent> StaticMesh;
+    UStaticMeshComponent* StaticMesh;
 
     /*
     * ParticleSystem Component
     */
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Pickup")
-    TObjectPtr<UParticleSystemComponent> ParticleSystemComponent;
+    UParticleSystemComponent* ParticleSystemComponent;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -75,7 +71,7 @@ public:
     /**
     * Is this Character permitted to pickup?
     */
-    virtual bool IsPickupPermitted(const AUR_Character* PickupCharacter) const;
+    bool IsPickupPermitted(const AUR_Character* PickupCharacter) const;
 
     /**
     * Is this actor permitted to pickup given its associated GameplayTags?
@@ -89,59 +85,66 @@ public:
     UFUNCTION()
     void Pickup(AUR_Character* PickupCharacter);
 
-    UFUNCTION(NetMulticast, Reliable)
-    void MulticastPickedUp(AUR_Character* PickupCharacter);
-
     /**
-    * Server & Client.
-    * Actions to perform on pickup.
-    * Return true to destroy the pickup, false to keep it alive.
+    * BP-Implementable Hook Event for actions to perform on Pickup
     */
     UFUNCTION(BlueprintNativeEvent, Category = "Pickup")
-    bool OnPickup(AUR_Character* PickupCharacter);
+    void OnPickup(AUR_Character* PickupCharacter);
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-    * Client only. Play pickup effects/sounds.
+    * Set the Pickup State
     */
-    UFUNCTION(BlueprintCosmetic, BlueprintNativeEvent, BlueprintCallable, Category = "Pickup")
-    void PlayPickupEffects(AUR_Character* PickupCharacter);
+    UFUNCTION(BlueprintCallable, Category = "Pickup")
+    void SetPickupState(EPickupState NewState);
 
-    UPROPERTY(BlueprintAssignable)
-    FOnPickedUpSignature OnPickedUp;
+    /**
+    * Respawn Pickup
+    */
+    UFUNCTION(Category = "Pickup")
+    void RespawnPickup();
+
+    /**
+    * Pickup State
+    */
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Pickup")
+    EPickupState PickupState;
+
+    /**
+    * Time (in Seconds) for an Inactive Pickup to become Active
+    */
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Pickup")
+    float RespawnInterval;
+
+
+    FTimerHandle RespawnHandle;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
     * Sound played on Pickup
     */
-    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Pickup")
-    TObjectPtr<USoundBase> PickupSound;
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Pickup")
+    USoundBase* PickupSound;
 
     /**
-    * Effect played on Pickup
+    * Sound played on Respawn
     */
-    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Pickup")
-    TObjectPtr<UFXSystemAsset> PickupEffect;
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Pickup")
+    USoundBase* RespawnSound;
 
+    // @! TODO : FText for Localization?
     /**
     * Display Name of Pickup
     */
-    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Pickup")
-    FText DisplayName;
-
-    /**
-    * Whether to broadcast GameState->PickupEvent on pickup.
-    */
-    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Pickup")
-    bool bBroadcastPickupEvent;
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Pickup")
+    FString DisplayName;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     // Gameplay Tags
 
-    virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override
-    {
-        TagContainer = GameplayTags;
-    }
+    virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
 
     /**
     * Gameplay Tags for this Actor

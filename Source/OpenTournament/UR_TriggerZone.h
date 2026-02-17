@@ -1,12 +1,12 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagAssetInterface.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagAssetInterface.h"
 
 #include "UR_TriggerZone.generated.h"
 
@@ -20,7 +20,6 @@ class UShapeComponent;
 // Delegates
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorEnter, AActor*, EnteringActor);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorExit, AActor*, ExitingActor);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,23 +36,23 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorExit, AActor*, ExitingActor)
 * Complex spaces (e.g., a large rectangular 'Trigger Zone' with a hole cut out in the center)
 * can be formed by creating BP subclasses utilizing additional shape components.
 * Upon entering these sub-zones, use overlap events within the BP to add/remove actors from the tracked Actors.
-*
+* 
 * This class is abstract.
 * For placeable versions, see AUR_TriggerZone_Box & AUR_TriggerZone_Capsule.
-*
+* 
 * @! TODO: Issues to Address
 * - Characters Entering Zone by unusual means (Spawning, Teleporting)
 * - Characters Leaving Zone by alternate means (Dying, Teleporting)
 */
 UCLASS(Abstract, NotBlueprintable, HideCategories = (Tick, Rendering, Replication, Input, Actor, LOD, Cooking))
-class OPENTOURNAMENT_API AUR_TriggerZone
-    : public AActor,
-      public IGameplayTagAssetInterface
+class OPENTOURNAMENT_API AUR_TriggerZone : public AActor,
+    public IGameplayTagAssetInterface
 {
     GENERATED_BODY()
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 public:
+
     AUR_TriggerZone(const FObjectInitializer& ObjectInitializer);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,12 +64,10 @@ public:
     */
     virtual void PostInitializeComponents() override;
 
-#if WITH_EDITOR
     /**
     * Check for Errors to find instances where this actor is configured incorrectly.
     */
-    virtual void CheckForErrors() override;
-#endif // WITH_EDITOR
+    virtual void CheckForErrors();
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -174,10 +171,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////
     // Gameplay Tags
 
-    virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override
-    {
-        TagContainer = GameplayTags;
-    }
+    virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
 
     /**
     * Gameplay Tags for this Actor

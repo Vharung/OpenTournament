@@ -1,10 +1,8 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_PickupBase.h"
-
-#include <Engine/World.h>
 
 #include "Net/UnrealNetwork.h"
 #include "Components/SceneComponent.h"
@@ -17,8 +15,6 @@
 #include "UR_FunctionLibrary.h"
 #include "UR_PlayerController.h"
 #include "UR_LocalMessage.h"
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_PickupBase)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,8 +56,9 @@ AUR_PickupBase::AUR_PickupBase()
     CapsuleComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
     CapsuleComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
     CapsuleComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-    CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
+    CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &AUR_PickupBase::OnBeginOverlap);
 
+    RotatingComponent = nullptr;
     RotationRate = 180;
     BobbingHeight = 0;
     BobbingSpeed = 1.0f;
@@ -84,7 +81,7 @@ void AUR_PickupBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    DOREPLIFETIME_CONDITION(ThisClass, bRepInitialPickupAvailable, COND_InitialOnly);
+    DOREPLIFETIME_CONDITION(AUR_PickupBase, bRepInitialPickupAvailable, COND_InitialOnly);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,7 +92,13 @@ void AUR_PickupBase::BeginPlay()
 
     if (!IsNetMode(NM_DedicatedServer))
     {
-        // Noop
+        //TODO: configurable rotating pickups ?
+        SetActorTickEnabled(RotatingComponent && (RotationRate != 0.0f || BobbingHeight != 0.0f));
+
+        if (RotatingComponent)
+        {
+            InitialRelativeLocation = RotatingComponent->GetRelativeTransform().GetLocation();
+        }
     }
 
     if (HasAuthority())
@@ -137,6 +140,63 @@ void AUR_PickupBase::OnRep_bRepInitialPickupAvailable()
     // Remote initial availability
     bPickupAvailable = bRepInitialPickupAvailable;
     ShowPickupAvailable(bPickupAvailable);
+}
+
+void AUR_PickupBase::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    if (!ShouldSkipTick())
+    {
+        if (RotationRate > 0.0f)
+        {
+            RotatingComponent->AddLocalRotation(FRotator(0.0f, RotationRate * DeltaTime, 0.0f));
+        }
+
+        if (BobbingHeight > 0.0f)
+        {
+            FVector Loc(InitialRelativeLocation);
+            Loc.Z += BobbingHeight * FMath::Sin(BobbingSpeed * PI * GetWorld()->TimeSeconds);
+            RotatingComponent->SetRelativeLocation(Loc);
+        }
+    }
+}
+
+// See MovementComponent.cpp @ 329
+bool AUR_PickupBase::ShouldSkipTick()
+{
+    if (!RotatingComponent || !RotatingComponent->IsVisible())
+    {
+        return true;
+    }
+
+    const float RenderTimeThreshold = 0.41f;
+    UWorld* TheWorld = GetWorld();
+
+    if (const UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(RotatingComponent))
+    {
+        if (TheWorld->TimeSince(PrimitiveComp->GetLastRenderTime()) <= RenderTimeThreshold)
+        {
+            return false; // Rendered, don't skip it.
+        }
+    }
+
+    // Most components used with movement components don't actually render, so check attached children render times.
+    TArray<USceneComponent*> RotatingChildren;
+    RotatingComponent->GetChildrenComponents(true, RotatingChildren);
+    for (auto Child : RotatingChildren)
+    {
+        if (const UPrimitiveComponent* PrimitiveChild = Cast<UPrimitiveComponent>(Child))
+        {
+            if (PrimitiveChild->IsRegistered() && TheWorld->TimeSince(PrimitiveChild->GetLastRenderTime()) <= RenderTimeThreshold)
+            {
+                return false; // Rendered, don't skip it.
+            }
+        }
+    }
+
+    // No children were recently rendered, safely skip the update.
+    return true;
 }
 
 void AUR_PickupBase::OnBeginOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

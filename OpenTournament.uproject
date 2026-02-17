@@ -1,42 +1,23 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.7",
+	"EngineAssociation": "4.25",
 	"Category": "",
-	"Description": "opentournamentgame.com",
+	"Description": "",
 	"Modules": [
 		{
 			"Name": "OpenTournament",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"AIModule",
-				"DeveloperSettings",
-				"GameplayAbilities",
-				"UMG"
-			]
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
 		{
-			"Name": "Metasound",
-			"Enabled": true
+			"Name": "SteamVR",
+			"Enabled": false
 		},
 		{
-			"Name": "ReplicationGraph",
-			"Enabled": true
-		},
-		{
-			"Name": "GameSubtitles",
-			"Enabled": true
-		},
-		{
-			"Name": "AudioModulation",
-			"Enabled": true
-		},
-		{
-			"Name": "DTLSHandlerComponent",
-			"Enabled": true
+			"Name": "OculusVR",
+			"Enabled": false
 		},
 		{
 			"Name": "GameplayAbilities",
@@ -52,43 +33,31 @@
 		},
 		{
 			"Name": "EditorTests",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
+			"Enabled": true
 		},
 		{
 			"Name": "Gauntlet",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "NNEDenoiser",
-			"Enabled": false,
-			"TargetAllowList": [
-				"Editor"
-			],
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Linux",
-				"Mac"
-			]
+			"Enabled": true
 		},
 		{
 			"Name": "FunctionalTestingEditor",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
+			"Enabled": true
 		},
 		{
-			"Name": "SkeletalReduction",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
+			"Name": "MagicLeapMedia",
+			"Enabled": false
+		},
+		{
+			"Name": "MagicLeap",
+			"Enabled": false
+		},
+		{
+			"Name": "MagicLeapPassableWorld",
+			"Enabled": false
+		},
+		{
+			"Name": "MLSDK",
+			"Enabled": false
 		},
 		{
 			"Name": "AlembicImporter",
@@ -143,6 +112,14 @@
 			"Enabled": false
 		},
 		{
+			"Name": "ChaosClothEditor",
+			"Enabled": false
+		},
+		{
+			"Name": "ChaosCloth",
+			"Enabled": false
+		},
+		{
 			"Name": "ChaosNiagara",
 			"Enabled": false
 		},
@@ -171,7 +148,15 @@
 			"Enabled": false
 		},
 		{
+			"Name": "PostSplashScreen",
+			"Enabled": false
+		},
+		{
 			"Name": "DatasmithContent",
+			"Enabled": false
+		},
+		{
+			"Name": "EditableMesh",
 			"Enabled": false
 		},
 		{
@@ -179,11 +164,12 @@
 			"Enabled": false
 		},
 		{
+			"Name": "GeometryCache",
+			"Enabled": false
+		},
+		{
 			"Name": "MeshPainting",
-			"Enabled": false,
-			"TargetAllowList": [
-				"Editor"
-			]
+			"Enabled": true
 		},
 		{
 			"Name": "GoogleCloudMessaging",
@@ -214,11 +200,19 @@
 			"Enabled": false
 		},
 		{
+			"Name": "MatineeToLevelSequence",
+			"Enabled": false
+		},
+		{
 			"Name": "MovieRenderPipeline",
 			"Enabled": false
 		},
 		{
 			"Name": "LevelSequenceEditor",
+			"Enabled": false
+		},
+		{
+			"Name": "LightPropagationVolume",
 			"Enabled": false
 		},
 		{
@@ -250,7 +244,15 @@
 			"Enabled": false
 		},
 		{
+			"Name": "Paper2D",
+			"Enabled": false
+		},
+		{
 			"Name": "PerforceSourceControl",
+			"Enabled": false
+		},
+		{
+			"Name": "PhysXVehicles",
 			"Enabled": false
 		},
 		{
@@ -263,6 +265,10 @@
 		},
 		{
 			"Name": "ProxyLODPlugin",
+			"Enabled": false
+		},
+		{
+			"Name": "SkeletalReduction",
 			"Enabled": false
 		},
 		{
@@ -302,6 +308,10 @@
 			"Enabled": false
 		},
 		{
+			"Name": "NUTUnrealEngine4",
+			"Enabled": false
+		},
+		{
 			"Name": "NetcodeUnitTest",
 			"Enabled": false
 		},
@@ -311,6 +321,18 @@
 		},
 		{
 			"Name": "ActorSequence",
+			"Enabled": false
+		},
+		{
+			"Name": "VisualStudioSourceCodeAccess",
+			"Enabled": false
+		},
+		{
+			"Name": "VisualStudioCodeSourceCodeAccess",
+			"Enabled": false
+		},
+		{
+			"Name": "RuntimePhysXCooking",
 			"Enabled": false
 		},
 		{
@@ -338,6 +360,10 @@
 			"Enabled": false
 		},
 		{
+			"Name": "UMods",
+			"Enabled": true
+		},
+		{
 			"Name": "SoundUtilities",
 			"Enabled": true
 		},
@@ -348,184 +374,6 @@
 		{
 			"Name": "Spatialization",
 			"Enabled": true
-		},
-		{
-			"Name": "AndroidFileServer",
-			"Enabled": false
-		},
-		{
-			"Name": "DumpGPUServices",
-			"Enabled": false
-		},
-		{
-			"Name": "GameFeatures",
-			"Enabled": true
-		},
-		{
-			"Name": "ModularGameplay",
-			"Enabled": true
-		},
-		{
-			"Name": "GeometryScripting",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "ModelingToolsEditorMode",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "StaticMeshEditorModeling",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "GeometryCollectionPlugin",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "AbilitySystemGameFeatureActions",
-			"Enabled": true
-		},
-		{
-			"Name": "CommonLoadingScreen",
-			"Enabled": true
-		},
-		{
-			"Name": "CommonUI",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayMessageRouter",
-			"Enabled": true
-		},
-		{
-			"Name": "AssetSearch",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "ControlFlows",
-			"Enabled": true
-		},
-		{
-			"Name": "OnlineFramework",
-			"Enabled": true
-		},
-		{
-			"Name": "BUIValidator",
-			"Enabled": false
-		},
-		{
-			"Name": "SignificanceManager",
-			"Enabled": true
-		},
-		{
-			"Name": "UIExtension",
-			"Enabled": true
-		},
-		{
-			"Name": "AsyncMixin",
-			"Enabled": true
-		},
-		{
-			"Name": "DataRegistry",
-			"Enabled": true
-		},
-		{
-			"Name": "Fab",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Mac",
-				"Linux"
-			],
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "ModelViewViewModel",
-			"Enabled": true
-		},
-		{
-			"Name": "ModelViewViewModelPreview",
-			"Enabled": true
-		},
-		{
-			"Name": "NiagaraFluids",
-			"Enabled": true
-		},
-		{
-			"Name": "Bridge",
-			"Enabled": false
-		},
-		{
-			"Name": "MetaHumanSDK",
-			"Enabled": false
-		},
-		{
-			"Name": "MassInsights",
-			"Enabled": false
-		},
-		{
-			"Name": "ChaosInsights",
-			"Enabled": false
-		},
-		{
-			"Name": "NFORDenoise",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Linux"
-			]
-		},
-		{
-			"Name": "GLTFExporter",
-			"Enabled": false
-		},
-		{
-			"Name": "InterchangeEditor",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Linux",
-				"Mac"
-			]
-		},
-		{
-			"Name": "InterchangeTests",
-			"Enabled": false
-		},
-		{
-			"Name": "Interchange",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Linux",
-				"Mac"
-			]
-		},
-		{
-			"Name": "InterchangeAssets",
-			"Enabled": false
 		}
-	],
-	"TargetPlatforms": [
-		"Windows",
-		"Win64",
-		"Linux"
 	]
 }

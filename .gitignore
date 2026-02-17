@@ -51,7 +51,6 @@ Saved
 # =========================
 
 .idea
-OpenTournament.uproject.DotSettings.user
 Plugins/Developer/RiderLink/
 
 # =========================
@@ -67,11 +66,6 @@ OpenTournament\.sln
 Source/LastSaved
 Config/DefaultEditorPerProjectUserSettings.ini
 
-#Allow Application Icons
-!Build/**/*.ico
-!Build/**/*.icns
-!Build/**/*.png
-
 # Ignore Source Files Installed from Asset Packs
 SourceFiles/InPlace
 SourceFiles/RootMotion
@@ -85,12 +79,6 @@ Source/SK_Mannequin_A_Pose_README.txt
 Source/SK_Mannequin_T_Pose_README.txt
 Source/UE4_MocapOnline_Tech_Notes.txt
 
-# Ignore These Asset Packs
-Content/*
-!Content/OpenTournament
-!Content/StarterContent
-
-
 # Ignore Source File Formats
 *.tga
 
@@ -100,21 +88,15 @@ Content/*
 Binaries/*
 !Binaries/Win64
 Binaries/Win64/*
-Binaries/*/*DebugGame.dll
 !Binaries/Win64/OpenTournamentEditor.target
 !Binaries/Win64/UE4Editor.modules
-!Binaries/Win64/UnrealEditor.modules
 !Binaries/Win64/UE4Editor-OpenTournament.dll
-!Binaries/Win64/UnrealEditor-OpenTournament.dll
 Binaries/Win64/*-[0-9][0-9][0-9][0-9].dll
+Plugins/*/*
 !Plugins/*/Binaries
 Plugins/*/Binaries/*
 !Plugins/*/Binaries/Win64
 Plugins/*/Binaries/Win64/*
 !Plugins/*/Binaries/Win64/UE4Editor-*.dll
-!Plugins/*/Binaries/Win64/UnrealEditor-*.dll
 Plugins/*/Binaries/Win64/*-[0-9][0-9][0-9][0-9].dll
 !Plugins/*/Binaries/Win64/UE4Editor.modules
-!Plugins/*/Binaries/Win64/UnrealEditor.modules
-Plugins/*/Binaries/*/*DebugGame.dll
-

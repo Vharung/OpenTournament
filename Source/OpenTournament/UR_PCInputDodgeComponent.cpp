@@ -1,26 +1,21 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_PCInputDodgeComponent.h"
 
-#include <InputAction.h>
-
 #include "UR_Character.h"
-#include "UR_InputComponent.h"
+#include "UR_CharacterMovementComponent.h"
 #include "UR_PlayerController.h"
-#include "Character/UR_CharacterMovementComponent.h"
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_PCInputDodgeComponent)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-UUR_PCInputDodgeComponent::UUR_PCInputDodgeComponent()
-    : MovementForwardAxis(0.0f)
-    , MovementStrafeAxis(0.0f)
-    , bRequestedKeyDodge(false)
-    , MaxDodgeClickThresholdTime(0.25f)
-    , KeyTapTime(FKeyTapTime())
+UUR_PCInputDodgeComponent::UUR_PCInputDodgeComponent() :
+    MovementForwardAxis(0.0f),
+    MovementStrafeAxis(0.0f),
+    bRequestedKeyDodge(false),
+    MaxDodgeClickThresholdTime(0.25f),
+    KeyTapTime(FKeyTapTime())
 {
     KeyTapTime.LastTapLeftTime = -10.f;
     KeyTapTime.LastTapRightTime = -10.f;
@@ -38,16 +33,18 @@ void UUR_PCInputDodgeComponent::BeginPlay()
 
     if (const auto OwningPC = Cast<AUR_PlayerController>(GetOwner()))
     {
-        if (auto InputComponent = Cast<UUR_InputComponent>(OwningPC->InputComponent))
+        if (auto InputComponent = OwningPC->InputComponent)
         {
-            //InputComponent->BindAction(InputActionKeyDodge, ETriggerEvent::Triggered, this, &ThisClass::OnKeyDodge);
+            // Single Key Dodge Binding
+            InputComponent->BindAction("KeyDodge", IE_Pressed, this, &UUR_PCInputDodgeComponent::OnKeyDodge);
 
-            //InputComponent->BindAction(InputActionTapForward, ETriggerEvent::Triggered, this, &ThisClass::OnTapForward);
-            //InputComponent->BindAction(InputActionTapBack, ETriggerEvent::Triggered, this, &ThisClass::OnTapBack);
-            //InputComponent->BindAction(InputActionTapRight, ETriggerEvent::Triggered, this, &ThisClass::OnTapRight);
-            //InputComponent->BindAction(InputActionTapLeft, ETriggerEvent::Triggered, this, &ThisClass::OnTapLeft);
-            //InputComponent->BindAction(InputActionTapUp, ETriggerEvent::Triggered, this, &ThisClass::OnTapUp);
-            //InputComponent->BindAction(InputActionTapDown, ETriggerEvent::Triggered, this, &ThisClass::OnTapDown);
+            // Directional Key Bindings
+            InputComponent->BindAction("TapLeft", IE_Pressed, this, &UUR_PCInputDodgeComponent::OnTapLeft);
+            InputComponent->BindAction("TapRight", IE_Pressed, this, &UUR_PCInputDodgeComponent::OnTapRight);
+            InputComponent->BindAction("TapForward", IE_Pressed, this, &UUR_PCInputDodgeComponent::OnTapForward);
+            InputComponent->BindAction("TapBackward", IE_Pressed, this, &UUR_PCInputDodgeComponent::OnTapBack);
+            InputComponent->BindAction("TapUp", IE_Pressed, this, &UUR_PCInputDodgeComponent::OnTapUpward);
+            InputComponent->BindAction("TapDown", IE_Pressed, this, &UUR_PCInputDodgeComponent::OnTapDownward);
         }
     }
 }
@@ -66,7 +63,7 @@ void UUR_PCInputDodgeComponent::ProcessPlayerInput(const float DeltaTime, const 
     MovementStrafeAxis = 0.f;
 }
 
-void UUR_PCInputDodgeComponent::OnKeyDodge(const FInputActionInstance& InputActionInstance)
+void UUR_PCInputDodgeComponent::OnKeyDodge()
 {
     bRequestedKeyDodge = true;
 }
@@ -77,67 +74,32 @@ void UUR_PCInputDodgeComponent::SetKeyDodgeInputDirection() const
     {
         if (const auto Character = Cast<AUR_Character>(OwningPC->GetCharacter()))
         {
-            EDodgeDirection DodgeDirection = EDodgeDirection::Forward;
-
-            auto LastMovementInput = Character->GetLastMovementInputVector();
-            if (LastMovementInput.IsNearlyZero())
-            {
-                Character->SetDodgeDirection(DodgeDirection);
-                return;
-            }
-
-            const FVector ForwardVector = Character->GetActorForwardVector();
-            const FVector RightVector = FVector::CrossProduct(FVector::UpVector, ForwardVector).GetSafeNormal();
-
-            // Use the dot product to determine direction
-            const float ForwardDot = FVector::DotProduct(LastMovementInput, ForwardVector);
-            const float RightDot = FVector::DotProduct(LastMovementInput, RightVector);
-
-            if (ForwardDot > 0.707f)
-            {
-                DodgeDirection = EDodgeDirection::Forward;
-            }
-            else if (ForwardDot < - 0.707f)
-            {
-                DodgeDirection = EDodgeDirection::Backward;
-            }
-            else if (RightDot > 0.707f)
-            {
-                DodgeDirection = EDodgeDirection::Right;
-            }
-            else if (RightDot < -0.707f)
-            {
-                DodgeDirection = EDodgeDirection::Left;
-            }
-
-            Character->SetDodgeDirection(DodgeDirection);
-
             // Read cached MovementAxes to determine KeyDodge direction. Default to Forward
-            // if (MovementStrafeAxis > 0.5f)
-            // {
-            //     Character->SetDodgeDirection(EDodgeDirection::Right);
-            // }
-            // else if (MovementStrafeAxis < -0.5f)
-            // {
-            //     Character->SetDodgeDirection(EDodgeDirection::Left);
-            // }
-            // else if (MovementForwardAxis < 0.f)
-            // {
-            //     Character->SetDodgeDirection(EDodgeDirection::Backward);
-            // }
-            // else
-            // {
-            //     Character->SetDodgeDirection(EDodgeDirection::Forward);
-            // }
+            if (MovementStrafeAxis > 0.5f)
+            {
+                Character->SetDodgeDirection(EDodgeDirection::Right);
+            }
+            else if (MovementStrafeAxis < -0.5f)
+            {
+                Character->SetDodgeDirection(EDodgeDirection::Left);
+            }
+            else if (MovementForwardAxis < 0.f)
+            {
+                Character->SetDodgeDirection(EDodgeDirection::Backward);
+            }
+            else
+            {
+                Character->SetDodgeDirection(EDodgeDirection::Forward);
+            }
         }
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UUR_PCInputDodgeComponent::OnTapForward(const FInputActionInstance& InputActionInstance)
+void UUR_PCInputDodgeComponent::OnTapForward()
 {
-    KeyTapTime.LastTapRightTime = INDEX_NONE;
+    KeyTapTime.LastTapRightTime = -10.f;
     KeyTapTime.LastTapLeftTime = -10.f;
     KeyTapTime.LastTapBackTime = -10.f;
     KeyTapTime.LastTapUpTime = -10.f;
@@ -147,7 +109,7 @@ void UUR_PCInputDodgeComponent::OnTapForward(const FInputActionInstance& InputAc
     KeyTapTime.LastTapForwardTime = GetWorld()->GetTimeSeconds();
 }
 
-void UUR_PCInputDodgeComponent::OnTapBack(const FInputActionInstance& InputActionInstance)
+void UUR_PCInputDodgeComponent::OnTapBack()
 {
     KeyTapTime.LastTapRightTime = -10.f;
     KeyTapTime.LastTapLeftTime = -10.f;
@@ -159,7 +121,7 @@ void UUR_PCInputDodgeComponent::OnTapBack(const FInputActionInstance& InputActio
     KeyTapTime.LastTapBackTime = GetWorld()->GetTimeSeconds();
 }
 
-void UUR_PCInputDodgeComponent::OnTapLeft(const FInputActionInstance& InputActionInstance)
+void UUR_PCInputDodgeComponent::OnTapLeft()
 {
     KeyTapTime.LastTapRightTime = -10.f;
     KeyTapTime.LastTapForwardTime = -10.f;
@@ -171,7 +133,7 @@ void UUR_PCInputDodgeComponent::OnTapLeft(const FInputActionInstance& InputActio
     KeyTapTime.LastTapLeftTime = GetWorld()->GetTimeSeconds();
 }
 
-void UUR_PCInputDodgeComponent::OnTapRight(const FInputActionInstance& InputActionInstance)
+void UUR_PCInputDodgeComponent::OnTapRight()
 {
     KeyTapTime.LastTapLeftTime = -10.f;
     KeyTapTime.LastTapForwardTime = -10.f;
@@ -183,7 +145,7 @@ void UUR_PCInputDodgeComponent::OnTapRight(const FInputActionInstance& InputActi
     KeyTapTime.LastTapRightTime = GetWorld()->GetTimeSeconds();
 }
 
-void UUR_PCInputDodgeComponent::OnTapUp(const FInputActionInstance& InputActionInstance)
+void UUR_PCInputDodgeComponent::OnTapUpward()
 {
     KeyTapTime.LastTapRightTime = -10.f;
     KeyTapTime.LastTapLeftTime = -10.f;
@@ -195,7 +157,7 @@ void UUR_PCInputDodgeComponent::OnTapUp(const FInputActionInstance& InputActionI
     KeyTapTime.LastTapUpTime = GetWorld()->GetTimeSeconds();
 }
 
-void UUR_PCInputDodgeComponent::OnTapDown(const FInputActionInstance& InputActionInstance)
+void UUR_PCInputDodgeComponent::OnTapDownward()
 {
     KeyTapTime.LastTapRightTime = -10.f;
     KeyTapTime.LastTapLeftTime = -10.f;
@@ -207,8 +169,28 @@ void UUR_PCInputDodgeComponent::OnTapDown(const FInputActionInstance& InputActio
     KeyTapTime.LastTapDownTime = GetWorld()->GetTimeSeconds();
 }
 
+void UUR_PCInputDodgeComponent::OnTapForwardRelease()
+{
+    // SingleTap WallDodge Behavior
+}
+
+void UUR_PCInputDodgeComponent::OnTapBackRelease()
+{
+
+}
+
+void UUR_PCInputDodgeComponent::OnTapLeftRelease()
+{
+
+}
+
+void UUR_PCInputDodgeComponent::OnTapRightRelease()
+{
+
+}
+
 void UUR_PCInputDodgeComponent::SetTapDodgeInputDirection(const float LastTapTime, const float MaxClickTime,
-                                                          const EDodgeDirection DodgeDirection) const
+                                                       const EDodgeDirection DodgeDirection) const
 {
     if (const auto OwningPC = Cast<AUR_PlayerController>(GetOwner()))
     {

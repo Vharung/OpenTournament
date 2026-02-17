@@ -1,10 +1,11 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
-#include <UR_Weapon.h>
+#include "CoreMinimal.h"
+#include "UR_Weapon.h"
 
 #include "UR_Weap_RocketLauncher.generated.h"
 
@@ -14,14 +15,14 @@
  *
  */
 UCLASS()
-class OPENTOURNAMENT_API AUR_Weap_RocketLauncher
-    : public AUR_Weapon
+class OPENTOURNAMENT_API AUR_Weap_RocketLauncher : public AUR_Weapon
 {
     GENERATED_BODY()
 
     AUR_Weap_RocketLauncher(const FObjectInitializer& ObjectInitializer);
 
 public:
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     UUR_FireModeCharged* ChargedFireMode;
 
@@ -38,5 +39,6 @@ public:
     UPROPERTY(EditAnywhere, Category = "Weapon|Rockets")
     float UseMuzzleDistance;
 
-    virtual void AuthorityShot_Implementation(UUR_FireModeBasic* FireMode, const FSimulatedShotInfo& SimulatedInfo) override;
+    void AuthorityShot_Implementation(UUR_FireModeBasic* FireMode, const FSimulatedShotInfo& SimulatedInfo) override;
+
 };

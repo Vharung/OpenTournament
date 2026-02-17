@@ -1,10 +1,9 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_Teleporter.h"
 
-#include "NavLinkComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -18,42 +17,37 @@
 
 #include "OpenTournament.h"
 #include "UR_Character.h"
-#include "Character/UR_CharacterMovementComponent.h"
-#include "UR_LogChannels.h"
-#include "UR_Logging.h"
-#include "AI/UR_NavigationUtilities.h"
+#include "UR_CharacterMovementComponent.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
 #endif
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_Teleporter)
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-AUR_Teleporter::AUR_Teleporter(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
-    , DestinationActor(nullptr)
-    , ExitRotationType(EExitRotation::Relative)
-    , bKeepMomentum(true)
-    , TeleportActorClass(ACharacter::StaticClass())
-    , TeleportOutSound(nullptr)
-    , TeleportInSound(nullptr)
-    , TeleporterEnabledSound(nullptr)
-    , TeleporterDisabledSound(nullptr)
-    , TeleportOutParticleSystemClass(nullptr)
-    , TeleportInParticleSystemClass(nullptr)
-    , TeleporterEnabledParticleSystemClass(nullptr)
-    , TeleporterDisabledParticleSystemClass(nullptr)
-    , bIsEnabled(true)
-    , bRequiredTagsExact(false)
-    , bExcludedTagsExact(true)
-    , TeleporterMaterialInstance(nullptr)
-    , TeleporterMaterialIndex(INDEX_NONE)
-    , TeleporterMaterialParameterName("Color")
-    , TeleporterMaterialColorBase(FLinearColor(208.f, 160.f, 0.f, 1.f))
-    , TeleporterMaterialColorEvent(FLinearColor(250.f, 250.f, 25.f, 1.f))
-    , TeleporterMaterialColorInactive(FLinearColor(128.f, 128.f, 160.f, 1.f))
+AUR_Teleporter::AUR_Teleporter(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer),
+    DestinationActor(nullptr),
+    ExitRotationType(EExitRotation::Relative),
+    bKeepMomentum(true),
+    TeleportActorClass(ACharacter::StaticClass()),
+    TeleportOutSound(nullptr),
+    TeleportInSound(nullptr),
+    TeleporterEnabledSound(nullptr),
+    TeleporterDisabledSound(nullptr),
+    TeleportOutParticleSystemClass(nullptr),
+    TeleportInParticleSystemClass(nullptr),
+    TeleporterEnabledParticleSystemClass(nullptr),
+    TeleporterDisabledParticleSystemClass(nullptr),
+    bIsEnabled(true),
+    bRequiredTagsExact(false),
+    bExcludedTagsExact(true),
+    TeleporterMaterialInstance(nullptr),
+    TeleporterMaterialIndex(INDEX_NONE),
+    TeleporterMaterialParameterName("Color"),
+    TeleporterMaterialColorBase(FLinearColor(208.f, 160.f, 0.f, 1.f)),
+    TeleporterMaterialColorEvent(FLinearColor(250.f, 250.f, 25.f, 1.f)),
+    TeleporterMaterialColorInactive(FLinearColor(128.f, 128.f, 160.f, 1.f))
 {
     CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
     CapsuleComponent->SetCapsuleSize(45.f, 90.f, false);
@@ -62,8 +56,8 @@ AUR_Teleporter::AUR_Teleporter(const FObjectInitializer& ObjectInitializer)
     CapsuleComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
     CapsuleComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
     CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-    CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnTriggerEnter);
-    CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnTriggerExit);
+    CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &AUR_Teleporter::OnTriggerEnter);
+    CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &AUR_Teleporter::OnTriggerExit);
 
     MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMeshComponent"));
     MeshComponent->SetupAttachment(RootComponent);
@@ -76,23 +70,6 @@ AUR_Teleporter::AUR_Teleporter(const FObjectInitializer& ObjectInitializer)
 
     ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
     ParticleSystemComponent->SetupAttachment(RootComponent);
-
-    NavLink = CreateDefaultSubobject<UNavLinkComponent>("NavLink");
-    NavLink->SetupAttachment(CapsuleComponent);
-    NavLink->Links[0].Left = FVector::ZeroVector;
-    NavLink->Links[0].Direction = ENavLinkDirection::LeftToRight;
-}
-
-void AUR_Teleporter::OnConstruction(const FTransform& Transform)
-{
-    if (DestinationActor)
-    {
-        NavLink->Links[0].Right = NavLink->GetComponentTransform().InverseTransformPosition(DestinationActor->GetActorLocation());
-    }
-    else
-    {
-        NavLink->Links[0].Right = NavLink->GetComponentTransform().InverseTransformPosition(GetActorLocation() + DestinationTransform.GetLocation());
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,18 +111,18 @@ void AUR_Teleporter::Teleport(AActor* Other)
         IgnoredActors.Remove(Other);
         return;
     }
-
+    
     if (IsPermittedToTeleport(Other))
     {
-        GAME_LOG(LogGame, Verbose, "Teleporter (%s) Triggered", *GetName());
+        GAME_LOG(Game, Verbose, "Teleporter (%s) Triggered", *GetName());
 
         if (InternalTeleport(Other))
         {
-            GAME_LOG(LogGame, Log, "Teleport of Character (%s) succeeded", *Other->GetName());
+            GAME_LOG(Game, Log, "Teleport of Character (%s) succeeded", *Other->GetName());
         }
         else
         {
-            GAME_LOG(LogGame, Warning, "Teleport of Character (%s) failed", *Other->GetName());
+            GAME_LOG(Game, Warning, "Teleport of Character (%s) failed", *Other->GetName());
         }
     }
 }
@@ -213,27 +190,25 @@ bool AUR_Teleporter::InternalTeleport(AActor* TargetActor)
     {
         DestinationTeleporter->AddIgnoredActor(TargetActor);
     }
-
+    
     // Try to Perform Our Teleport
     const bool bIsTeleportSuccessful{ TargetActor->TeleportTo(DestinationLocation, DestinationRotation) };
-
+    
     if (bIsTeleportSuccessful)
     {
         // Play effects associated with teleportation
         PlayTeleportEffects();
-
+        
         // If we successfully teleported, notify our actor.
         // We need to do this to update CharacterMovementComponent.bJustTeleported property
         // Which is used to update EyePosition
         // (Otherwise our EyePosition interpolates through the world)
         TargetActor->TeleportSucceeded(false);
-
+    
         // Rotate velocity vector relative to the destination teleporter exit heading
         SetTargetVelocity(TargetActor, TargetCharacter, DesiredRotation, DestinationRotation);
 
         ApplyGameplayTag(TargetActor);
-
-        UUR_NavigationUtilities::ForceReachedDestinationWithin(Cast<APawn>(TargetActor), CapsuleComponent->GetNavigationBounds());
     }
 
     return bIsTeleportSuccessful;
@@ -298,8 +273,7 @@ void AUR_Teleporter::SetTargetVelocity(AActor* TargetActor, ACharacter* TargetCh
                 auto NewTargetVelocity = DestinationRotation.RotateVector(FVector::ForwardVector * CharacterMovement->Velocity.Size2D());
                 NewTargetVelocity.Z = CharacterMovement->Velocity.Z;
                 CharacterMovement->Velocity = NewTargetVelocity;
-                if (TargetCharacter->GetController())
-                    TargetCharacter->GetController()->SetControlRotation(DestinationRotation);
+                TargetCharacter->GetController()->SetControlRotation(DestinationRotation);
             }
             else
             {
@@ -363,14 +337,14 @@ void AUR_Teleporter::SetTeleporterState(const bool bInEnabled)
 
 void AUR_Teleporter::Enable()
 {
-    CapsuleComponent->UpdateOverlaps();
+    CapsuleComponent->UpdateOverlaps();    
     bIsEnabled = true;
-
+    
     TArray<AActor*> OverlappingActors;
     CapsuleComponent->GetOverlappingActors(OverlappingActors, TeleportActorClass);
     for (auto& OverlappingActor : OverlappingActors)
     {
-        GAME_LOG(LogGame, Log, "Overlapping Actor (%s)", *OverlappingActor->GetName());
+        GAME_LOG(Game, Log, "Overlapping Actor (%s)", *OverlappingActor->GetName());
         Teleport(OverlappingActor);
     }
 
@@ -383,7 +357,7 @@ void AUR_Teleporter::Enable()
     {
         UGameplayStatics::SpawnEmitterAttached(TeleporterEnabledParticleSystemClass, RootComponent);
     }
-
+    
     OnEnabled();
 }
 
@@ -401,7 +375,7 @@ void AUR_Teleporter::OnEnabled_Implementation()
 void AUR_Teleporter::Disable()
 {
     bIsEnabled = false;
-
+    
     if (TeleporterDisabledSound)
     {
         UGameplayStatics::PlaySoundAtLocation(GetWorld(), TeleporterDisabledSound, GetActorLocation());
@@ -411,7 +385,7 @@ void AUR_Teleporter::Disable()
     {
         UGameplayStatics::SpawnEmitterAttached(TeleporterDisabledParticleSystemClass, RootComponent);
     }
-
+    
     OnDisabled();
 }
 
@@ -442,7 +416,7 @@ void AUR_Teleporter::SetTeleportDestinationActor(AActor* InActor)
     }
     else
     {
-        GAME_LOG(LogGame, Warning, "Setting Teleporter (%s) DestinationActor to nullptr Actor!", *this->GetName());
+        GAME_LOG(Game, Warning, "Setting Teleporter (%s) DestinationActor to nullptr Actor!", *this->GetName());
     }
 }
 
@@ -454,7 +428,7 @@ void AUR_Teleporter::InitializeDynamicMaterialInstance()
     {
         if (UMaterialInterface* Material = MeshComponent->GetMaterial(TeleporterMaterialIndex))
         {
-            TeleporterMaterialInstance = UMaterialInstanceDynamic::Create(Material, nullptr);
+            TeleporterMaterialInstance =  UMaterialInstanceDynamic::Create(Material, nullptr);
             TeleporterMaterialInstance->SetVectorParameterValue(TeleporterMaterialParameterName, TeleporterMaterialColorBase);
             MeshComponent->SetMaterial(TeleporterMaterialIndex, TeleporterMaterialInstance);
         }
@@ -469,19 +443,19 @@ bool AUR_Teleporter::CanEditChange(const FProperty* InProperty) const
     const bool ParentVal = Super::CanEditChange(InProperty);
 
     // Can we edit bRequiredTagsExact?
-    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(ThisClass, bRequiredTagsExact))
+    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(AUR_Teleporter, bRequiredTagsExact))
     {
         return RequiredTags.Num() > 0;
     }
 
     // Can we edit bExcludedTagsExact?
-    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(ThisClass, bExcludedTagsExact))
+    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(AUR_Teleporter, bExcludedTagsExact))
     {
         return ExcludedTags.Num() > 0;
     }
 
     // Can we edit DestinationTransform?
-    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(ThisClass, DestinationTransform))
+    if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(AUR_Teleporter, DestinationTransform))
     {
         return DestinationActor == nullptr;
     }
@@ -489,3 +463,18 @@ bool AUR_Teleporter::CanEditChange(const FProperty* InProperty) const
     return ParentVal;
 }
 #endif
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if WITH_DEV_AUTOMATION_TESTS
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpenTournamentTeleporterTest, "OpenTournament.Feature.Levels.LevelFeatures.Actor", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FOpenTournamentTeleporterTest::RunTest(const FString& Parameters)
+{
+    // TODO : Automated Tests
+
+    return true;
+}
+
+#endif // WITH_DEV_AUTOMATION_TESTS

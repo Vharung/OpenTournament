@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -10,12 +10,10 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-class UGameplayEffect;
-
 /**
- * @! TODO: Deprecate Class due to bad naming & overlap with PickupFactory
+ * 
  */
-UCLASS(meta=(Deprecated))
+UCLASS()
 class OPENTOURNAMENT_API AUR_HealthBase : public AUR_PickupBase
 {
 	GENERATED_BODY()
@@ -34,5 +32,4 @@ public:
 	virtual void GiveTo_Implementation(class AActor* Other) override;
 	virtual FText GetItemName_Implementation() override;
 
-    TSubclassOf<UGameplayEffect> EffectClass;
 };

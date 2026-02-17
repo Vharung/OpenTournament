@@ -1,13 +1,11 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_Object_KeyBind.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_Object_KeyBind)
-
-UUR_Object_KeyBind::UUR_Object_KeyBind()
-    : Name("")
-    , Key("")
+UUR_Object_KeyBind::UUR_Object_KeyBind() :
+    Name(""),
+    Key("")
 {
 }

@@ -1,40 +1,37 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_Lift.h"
 
-#include "TimerManager.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 #include "OpenTournament.h"
-#include "UR_LogChannels.h"
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_Lift)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-AUR_Lift::AUR_Lift(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
-    , TravelDuration(1.f)
-    , StoppedAtEndPosition(2.f)
-    , EndRelativeLocation(FVector(0.f, 0.f, 100.f))
-    , EaseIn(true)
-    , EaseOut(true)
-    , LiftStartSound(nullptr)
-    , LiftMovingSound(nullptr)
-    , LiftEndSound(nullptr)
+AUR_Lift::AUR_Lift(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer),
+    TravelDuration(1.f),
+    StoppedAtEndPosition(2.f),
+    EndRelativeLocation(FVector(0.f, 0.f, 100.f)),
+    EaseIn(true),
+    EaseOut(true),
+    LiftStartSound(nullptr),
+    LiftMovingSound(nullptr),
+    LiftEndSound(nullptr)
 {
     BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
     BoxComponent->SetBoxExtent(FVector(50, 50, 30));
     SetRootComponent(BoxComponent);
     BoxComponent->SetGenerateOverlapEvents(true);
-    BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnTriggerEnter);
-    BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnTriggerExit);
+    BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUR_Lift::OnTriggerEnter);
+    BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AUR_Lift::OnTriggerExit);
 
     MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMeshComponent"));
     MeshComponent->SetupAttachment(RootComponent);
@@ -66,7 +63,7 @@ void AUR_Lift::OnTriggerEnter(UPrimitiveComponent* HitComp, AActor* Other, UPrim
     bIsTriggered = true;
     ActorsOnTrigger.AddUnique(Other);
 
-    GAME_LOG(LogGame, Log, "Entered Lift (%s) Trigger Region", *GetName());
+    GAME_LOG(Game, Log, "Entered Lift (%s) Trigger Region", *GetName());
 }
 
 void AUR_Lift::OnTriggerExit(UPrimitiveComponent* HitComp, AActor* Other, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -74,11 +71,11 @@ void AUR_Lift::OnTriggerExit(UPrimitiveComponent* HitComp, AActor* Other, UPrimi
     ActorsOnTrigger.Remove(Other);
     bIsTriggered = ActorsOnTrigger.Num() > 0;
 
-    GAME_LOG(LogGame, Log, "Exited Lift (%s) Trigger Region", *GetName());
+    GAME_LOG(Game, Log, "Exited Lift (%s) Trigger Region", *GetName());
 
     if (bIsTriggered)
     {
-        GAME_LOG(LogGame, Log, "Exited Lift (%s) is not Empty", *GetName());
+        GAME_LOG(Game, Log, "Exited Lift (%s) is not Empty", *GetName());
     }
 }
 

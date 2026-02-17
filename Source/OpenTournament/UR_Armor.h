@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -17,25 +17,25 @@ class USoundBase;
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 UCLASS()
-class OPENTOURNAMENT_API AUR_Armor
-    : public AUR_Pickup
+class OPENTOURNAMENT_API AUR_Armor : public AUR_Pickup
 {
     GENERATED_BODY()
-
+    
 public:
+
     AUR_Armor(const FObjectInitializer& ObjectInitializer);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
     UPROPERTY(EditDefaultsOnly)
-    TObjectPtr<UCapsuleComponent> CollisionComponentX;
+    UCapsuleComponent* CollisionComponentX;
 
     UPROPERTY(EditDefaultsOnly)
-    TObjectPtr<UAudioComponent> AudioComponentX;
+    UAudioComponent* AudioComponentX;
 
     /** Pickup mesh: 3rd person view */
     UPROPERTY(VisibleDefaultsOnly, Category = "Pickup")
-    TObjectPtr<UStaticMeshComponent> StaticMeshComponentX;
+    UStaticMeshComponent* StaticMeshComponentX;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 

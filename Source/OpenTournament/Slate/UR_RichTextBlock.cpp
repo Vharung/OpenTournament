@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -10,8 +10,8 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-UUR_RichTextBlock::UUR_RichTextBlock(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
+UUR_RichTextBlock::UUR_RichTextBlock(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer)
 {
     DecoratorClasses.Add(UUR_RichTextDecorator_CustomStyle::StaticClass());
 
@@ -19,14 +19,10 @@ UUR_RichTextBlock::UUR_RichTextBlock(const FObjectInitializer& ObjectInitializer
     {
         bOverrideDefaultStyle = true;
 
-        if (const UTextBlock* DefaultTextBlock = UTextBlock::StaticClass()->GetDefaultObject<UTextBlock>())
-        {
-            FTextBlockStyle Style;
-            Style.Font = DefaultTextBlock->GetFont();
-            Style.ColorAndOpacity = DefaultTextBlock->GetColorAndOpacity();
-            Style.ShadowOffset = DefaultTextBlock->GetShadowOffset();
-            Style.ShadowColorAndOpacity = DefaultTextBlock->GetShadowColorAndOpacity();
-            SetDefaultTextStyle(Style);
-        }
+        UTextBlock* DefaultTextBlock = UTextBlock::StaticClass()->GetDefaultObject<UTextBlock>();
+        DefaultTextStyleOverride.Font = DefaultTextBlock->Font;
+        DefaultTextStyleOverride.ColorAndOpacity = DefaultTextBlock->ColorAndOpacity;
+        DefaultTextStyleOverride.ShadowOffset = DefaultTextBlock->ShadowOffset;
+        DefaultTextStyleOverride.ShadowColorAndOpacity = DefaultTextBlock->ShadowColorAndOpacity;
     }
 }

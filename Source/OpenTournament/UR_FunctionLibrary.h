@@ -1,16 +1,12 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
-#include "Kismet/BlueprintFunctionLibrary.h"
-
-#include <Engine/Engine.h>
-
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
 #include "InputCoreTypes.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "UR_FunctionLibrary.generated.h"
 
@@ -26,17 +22,12 @@ class UAnimInstance;
 class UAnimMontage;
 class UActorComponent;
 class AUR_PlayerController;
-class UWidget;
-class UMeshComponent;
-class UMaterialInterface;
-class UInterface;
-class AUR_Weapon;
-class UFXSystemAsset;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 /**
- *
+ * 
  */
 UCLASS()
 class OPENTOURNAMENT_API UUR_FunctionLibrary : public UBlueprintFunctionLibrary
@@ -44,6 +35,7 @@ class OPENTOURNAMENT_API UUR_FunctionLibrary : public UBlueprintFunctionLibrary
     GENERATED_BODY()
 
 public:
+
     /**
      * Utility for retrieving GameMode CDO
      */
@@ -52,7 +44,7 @@ public:
     /**
      * Utility for retrieving GameMode CDO
      */
-    template <class T>
+    template<class T>
     static FORCEINLINE T* GetGameModeDefaultObject(const UObject* WorldContextObject)
     {
         return Cast<T>(GetGameModeBaseDefaultObject(WorldContextObject));
@@ -64,6 +56,22 @@ public:
     UFUNCTION(BlueprintPure, Category = "Utility", Meta = (WorldContext = "WorldContextObject"))
     static AUR_GameModeBase* GetGameModeDefaultObject(const UObject* WorldContextObject);
 
+
+    /**
+     * Utility to retrieve the String value of a given Enum
+     */
+    template<typename TEnum>
+    static FORCEINLINE FString GetEnumValueAsString(const FString& Name, TEnum Value)
+    {
+        const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, *Name, true);
+        if (!EnumPtr)
+        {
+            return FString("Invalid");
+        }
+        return EnumPtr->GetNameByValue(static_cast<int64>(Value)).ToString();
+    }
+
+
     /**
     * Resolve the text color a player should be written with.
     * Used for chat, death messages... [insert more]
@@ -73,7 +81,7 @@ public:
     * - Customizable self color in non team games
     */
     UFUNCTION(BlueprintPure)
-    static FColor GetPlayerDisplayTextColor(APlayerState* PS);
+    static FColor GetPlayerDisplayTextColor(const APlayerState* PS);
 
 
     /**
@@ -81,10 +89,7 @@ public:
     * Use to keep consistency around interfaces.
     */
     UFUNCTION(BlueprintPure)
-    static FColor GetSpectatorDisplayTextColor()
-    {
-        return FColor(255, 200, 0, 255);
-    }
+    static FColor GetSpectatorDisplayTextColor() { return FColor(255, 200, 0, 255); }
 
 
     /**
@@ -97,9 +102,9 @@ public:
     {
         // see RichTextMarkupProcessing.cpp
         return InText.Replace(TEXT("&"), TEXT("&amp;"))
-                     .Replace(TEXT("\""), TEXT("&quot;"))
-                     .Replace(TEXT("<"), TEXT("&lt;"))
-                     .Replace(TEXT(">"), TEXT("&gt;"));
+            .Replace(TEXT("\""), TEXT("&quot;"))
+            .Replace(TEXT("<"), TEXT("&lt;"))
+            .Replace(TEXT(">"), TEXT("&gt;"));
     }
 
 
@@ -110,9 +115,9 @@ public:
     static FString UnescapeRichText(const FString& InText)
     {
         return InText.Replace(TEXT("&gt;"), TEXT(">"))
-                     .Replace(TEXT("&lt;"), TEXT("<"))
-                     .Replace(TEXT("&quot;"), TEXT("\""))
-                     .Replace(TEXT("&amp;"), TEXT("&"));
+            .Replace(TEXT("&lt;"), TEXT("<"))
+            .Replace(TEXT("&quot;"), TEXT("\""))
+            .Replace(TEXT("&amp;"), TEXT("&"));
     }
 
 
@@ -165,13 +170,6 @@ public:
     UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "Game", Meta = (WorldContext = "WorldContextObject", UnsafeDuringActorConstruction = "true"))
     static AUR_PlayerController* GetLocalPlayerController(const UObject* WorldContextObject);
 
-    static APlayerController* GetLocalPC(const UObject* WorldContextObject);
-
-    template <typename T>
-    static T* GetLocalPC(const UObject* WorldContextObject)
-    {
-        return Cast<T>(GetLocalPC(WorldContextObject));
-    }
 
     /**
     * Returns true if actor is currently viewed by local player controller.
@@ -211,37 +209,10 @@ public:
     /**
     * Random vector between 2 vectors.
     */
-    UFUNCTION(BlueprintPure, Category = "Math")
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Math")
     static FVector RandomVectorInRange(const FVector& Vector1, const FVector& Vector2)
     {
         return FVector(FMath::RandRange(Vector1.X, Vector2.X), FMath::RandRange(Vector1.Y, Vector2.Y), FMath::RandRange(Vector1.Z, Vector2.Z));
-    }
-
-    UFUNCTION(BlueprintPure, Category = "Math")
-    static FORCEINLINE FVector2D RandomUnitVector2D()
-    {
-        const float Angle = FMath::FRand() * UE_TWO_PI;
-        return FVector2D(FMath::Cos(Angle), FMath::Sin(Angle));
-    }
-
-    UFUNCTION(BlueprintPure, Category = "Math")
-    static FORCEINLINE FVector2D RandomPointInCircle(const float Radius)
-    {
-        return FMath::Sqrt(FMath::FRand()) * Radius * RandomUnitVector2D();
-    }
-
-    UFUNCTION(BlueprintPure, Category = "Math")
-    static FORCEINLINE FVector RandomPointInSphere(const float Radius)
-    {
-        return FMath::Sqrt(FMath::FRand()) * Radius * FMath::VRand();
-    }
-
-    UFUNCTION(BlueprintPure, Category = "Math")
-    static FORCEINLINE FVector RandomPointInCylinder(const float Radius, const float HalfHeight)
-    {
-        const float Angle = FMath::FRand() * UE_TWO_PI;
-        const float Rad = FMath::Sqrt(FMath::FRand()) * Radius;
-        return FVector(Rad * FMath::Cos(Angle), Rad * FMath::Sin(Angle), FMath::FRandRange(-HalfHeight, HalfHeight));
     }
 
 
@@ -255,15 +226,13 @@ public:
     * Spawn effect attached - niagara/particle independent.
     */
     UFUNCTION(BlueprintCallable, Category = "Effects")
-    static UFXSystemComponent* SpawnEffectAttached(UFXSystemAsset* Template, const FTransform& Transform, USceneComponent* AttachToComponent, FName AttachPointName = NAME_None,
-                                                   EAttachLocation::Type LocationType = EAttachLocation::KeepRelativeOffset, bool bAutoDestroy = true, bool bAutoActivate = true);
+    static UFXSystemComponent* SpawnEffectAttached(UFXSystemAsset* Template, const FTransform& Transform, USceneComponent* AttachToComponent, FName AttachPointName = NAME_None, EAttachLocation::Type LocationType = EAttachLocation::KeepRelativeOffset, bool bAutoDestroy = true, bool bAutoActivate = true);
 
 
     /**
     * C++ utility to cast (checked) a TScriptInterface<IBase> to a TScriptInterface<IDerived>
     */
-    template <class IBase, class IDerived>
-    static void CastScriptInterface(const TScriptInterface<IBase>& Base, TScriptInterface<IDerived>& OutDerived)
+    template<class IBase, class IDerived> static void CastScriptInterface(const TScriptInterface<IBase>& Base, TScriptInterface<IDerived>& OutDerived)
     {
         UObject* Object = Base.GetObject();
         IDerived* Casted = Cast<IDerived>(Object);
@@ -274,7 +243,7 @@ public:
         }
         else
         {
-            OutDerived.SetObject(nullptr);
+            OutDerived.SetObject(NULL);
             //OutDerived.SetInterface(NULL); //unnecessary
         }
     }
@@ -293,173 +262,4 @@ public:
     UFUNCTION(BlueprintPure, Category = "Game")
     static bool IsOnlySpectator(APlayerState* PS);
 
-    /** Returns true if A is between B and C (B <= A <= C) */
-    UFUNCTION(BlueprintPure, meta = (DisplayName = "integer between", CompactNodeTitle = "<=>"), Category = "Math|Integer")
-    static bool Between_IntInt(const int32 A, const int32 Min, const int32 Max)
-    {
-        return A >= Min && A <= Max;
-    }
-
-    /** Returns true if A is between B and C (B <= A <= C) */
-    UFUNCTION(BlueprintPure, meta = (DisplayName = "float between", CompactNodeTitle = "<=>"), Category = "Math|Float")
-    static bool Between_FloatFloat(const float A, const float Min, const float Max)
-    {
-        return A >= Min && A <= Max;
-    }
-
-    UFUNCTION(BlueprintPure, Category = "Game Options", meta = (BlueprintThreadSafe))
-    static float GetFloatOption(const FString& Options, const FString& Key, float DefaultValue);
-
-    UFUNCTION(BlueprintCallable, Category = "UMG", Meta = (DeterminesOutputType = "WidgetClass", DynamicOutputParam = "OutWidgets"))
-    static bool FindChildrenWidgetsByClass(UWidget* Target, TSubclassOf<UWidget> WidgetClass, TArray<UWidget*>& OutWidgets, bool bRecursive = true);
-
-    /**
-    * Remove all override materials from a mesh component, restoring it to its defaults.
-    */
-    UFUNCTION(BlueprintCallable, Category = "Mesh|Material")
-    static void ClearOverrideMaterials(UMeshComponent* MeshComp);
-
-    /**
-    * Override all materials of a mesh component with a single material.
-    */
-    UFUNCTION(BlueprintCallable, Category = "Mesh|Material")
-    static void OverrideAllMaterials(UMeshComponent* MeshComp, UMaterialInterface* Material);
-
-    UFUNCTION(BlueprintCallable)
-    static void GetAllWeaponClasses(TSubclassOf<AUR_Weapon> InClassFilter, TArray<TSubclassOf<AUR_Weapon>>& OutWeaponClasses);
-
-    UFUNCTION(BlueprintPure, CustomThunk, Category = "Utilities|Array", Meta = (ArrayParm = "Source", ArrayTypeDependentParams = "Result"))
-    static void Array_Slice(const TArray<int32>& Source, TArray<int32>& Result, int32 Start, int32 End = -1);
-
-    static void GenericArray_Slice(void* SourceArray, const FArrayProperty* SourceArrayProp, void* ResultArray, const FArrayProperty* ResultArrayProp, int32 Start, int32 End);
-
-    DECLARE_FUNCTION(execArray_Slice)
-    {
-        // Retrieve the target array
-        Stack.MostRecentProperty = nullptr;
-        Stack.StepCompiledIn<FArrayProperty>(nullptr);
-        void* SourceArrayAddr = Stack.MostRecentPropertyAddress;
-        FArrayProperty* SourceArrayProp = CastField<FArrayProperty>(Stack.MostRecentProperty);
-        if (!SourceArrayProp)
-        {
-            Stack.bArrayContextFailed = true;
-            return;
-        }
-        // Retrieve the result array
-        Stack.MostRecentProperty = nullptr;
-        Stack.StepCompiledIn<FArrayProperty>(nullptr);
-        void* ResultArrayAddr = Stack.MostRecentPropertyAddress;
-        FArrayProperty* ResultArrayProp = CastField<FArrayProperty>(Stack.MostRecentProperty);
-        if (!ResultArrayProp)
-        {
-            Stack.bArrayContextFailed = true;
-            return;
-        }
-
-        P_GET_PROPERTY(FIntProperty, Start);
-        P_GET_PROPERTY(FIntProperty, End);
-        P_FINISH;
-        P_NATIVE_BEGIN;
-            GenericArray_Slice(SourceArrayAddr, SourceArrayProp, ResultArrayAddr, ResultArrayProp, Start, End);
-        P_NATIVE_END;
-    }
-
-    // c++ version
-    template <typename T>
-    static TArray<T> ArraySlice(const TArray<T>& InArray, int32 Start, int32 End = -1);
-
-    UFUNCTION(BlueprintPure, Category = "Utilities")
-    static bool ClassImplementsInterface(UClass* TestClass, TSubclassOf<UInterface> Interface);
-
-    UFUNCTION(BlueprintPure, Category = "Utilities|Text")
-    static FText JoinTextArray(const TArray<FText>& SourceArray, const FString& Separator = FString(TEXT(" ")))
-    {
-        return FText::Join(FText::FromString(Separator), SourceArray);
-    }
-
-    /**
-    * Find and return all tags in TagContainer matching TagToMatch.*
-    * Example container: {
-    *   Reward
-    *   Reward.MultiKill
-    *   Reward.MultiKill.Double
-    * }
-    * FindChildTags(Reward)           --> { Reward.MultiKill, Reward.MultiKill.Double }
-    * FindChildTags(Reward.MultiKill) --> { Reward.MultiKill.Double }
-    */
-    UFUNCTION(BlueprintPure, Category = "GameplayTags")
-    static FGameplayTagContainer FindChildTags(const FGameplayTagContainer& TagContainer, FGameplayTag TagToMatch);
-
-    /**
-    * Find and return any tag in TagContainer matching TagToMatch.*
-    * If several are found, only one is returned. Order is not guaranteed.
-    * If none are found, an empty GameplayTag is returned. Check result with IsValid.
-    * Example container: {
-    *   Reward
-    *   Reward.MultiKill
-    *   Reward.MultiKill.Double
-    * }
-    * FindChildTags(Reward.MultiKill) --> Reward.MultiKill.Double
-    */
-    UFUNCTION(BlueprintPure, Category = "GameplayTags")
-    static FGameplayTag FindAnyChildTag(const FGameplayTagContainer& TagContainer, FGameplayTag TagToMatch);
-
-    UFUNCTION(BlueprintPure, Category = "Math|Vector")
-    static FORCEINLINE FVector ClampVector(const FVector& V, const FVector& Min, const FVector& Max)
-    {
-        return FVector(
-            FMath::Clamp(V.X, Min.X, Max.X),
-            FMath::Clamp(V.Y, Min.Y, Max.Y),
-            FMath::Clamp(V.Z, Min.Z, Max.Z)
-        );
-    }
-
-    UFUNCTION(BlueprintPure, Category = "Math|Vector")
-    static FORCEINLINE FVector2D ClampVector2D(const FVector2D& V, const FVector2D& Min, const FVector2D& Max)
-    {
-        return FVector2D(
-            FMath::Clamp(V.X, Min.X, Max.X),
-            FMath::Clamp(V.Y, Min.Y, Max.Y)
-        );
-    }
-
-    /**
-    * Force refresh bone transforms on a skeletal mesh.
-    * Useful when you need to read a bone/socket transform from a mesh that may not have been rendered recently.
-    * Only makes sense when VisibilityBasedAnimTickOption == AlwaysTickPose (Always Tick, but Refresh BoneTransforms only when rendered)
-    */
-    UFUNCTION(BlueprintCallable, Category = "Game")
-    static void RefreshBoneTransforms(USkeletalMeshComponent* SkelMesh);
-
-    /**
-    * Walks up the chain of parents (including self) to call RefreshBoneTransforms on SkeletalMeshes.
-    * Will not work properly if a parent has VisibilityBasedAnimTickOption below AlwaysTickPose (ie. not ticking anims at all)
-    */
-    UFUNCTION(BlueprintCallable, Category = "Game")
-    static void RefreshComponentTransforms(USceneComponent* Component);
-
-    UFUNCTION(BlueprintCallable, Category = "Game")
-    static void PropagateOwnerNoSee(USceneComponent* Component, bool bOwnerNoSee);
-
-    /**
-    * Constrain InVector into a cone defined by ConeAxis and MaxAngle.
-    * ConeAxis must be unit vector. InVector can be any length. MaxAngle should be < 90 degrees.
-    * - If InVector is already in cone, result is InVector.
-    * - If InVector is opposite to cone axis, result is zero vector.
-    * - Otherwise, result is a projection of InVector onto the cone bounds, with InVector's original size preserved.
-    */
-    UFUNCTION(BlueprintPure, Category = "Math")
-    static FVector ConstrainVectorInCone(const FVector& InVector, const FVector& ConeAxis, const float MaxAngle = 45)
-    {
-        const FVector& InDir = InVector.GetSafeNormal();
-        const float AngleRad = FMath::DegreesToRadians(MaxAngle);
-        if (InDir.Dot(ConeAxis) >= FMath::Cos(AngleRad))
-            return InVector;
-
-        const FVector& PlaneDir = FVector::VectorPlaneProject(InDir, ConeAxis).GetSafeNormal();
-        if (PlaneDir.IsZero())
-            return FVector::ZeroVector;
-
-        return (FMath::Cos(AngleRad) * ConeAxis + FMath::Sin(AngleRad) * PlaneDir) * InVector.Size();
-    }
 };

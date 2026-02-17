@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +23,7 @@
 #define DEBUG_LOG_KEY_COLOR_TIME(key, color, time, text, ...)   DEBUG_LOG_INTERNAL(key, color,         time, text, __VA_ARGS__);
 
 #if !UE_BUILD_SHIPPING
-#define DEBUG_LOG_INTERNAL(key, color, time, text, ...) URLogging::LogFormat(TEXT(text), true, true, color, time, key, __VA_ARGS__);
+    #define DEBUG_LOG_INTERNAL(key, color, time, text, ...) URLogging::LogFormat(TEXT(text), true, true, color, time, key, __VA_ARGS__);
 #else
     #define DEBUG_LOG_INTERNAL(color, text, ...)
 #endif
@@ -39,24 +39,21 @@ namespace URLogging
     }
 
     void LogToConsoleInternal(FString inText);
-
     void LogToScreenInternal(FString inText, FColor inColor = FColor::White, float inTimeToDisplay = 5.0f, int32 inKey = -1);
 
-    //template <typename... Types>
-    //static void LogInternal(const TCHAR* Fmt, bool inLogToConsole, bool inLogToScreen, FColor inColor, float inTimeToDisplay, int32 inKey, Types&&... inArgs)
-    //{
-        // // Let FString::Printf handle the format validation directly
-        // FString text;
-        // text = FString::Printf(Fmt, std::forward<Types>(inArgs)...);
-        //
-        // if (inLogToConsole)
-        // {
-        //     LogToConsoleInternal(text);
-        // }
-        //
-        // if (inLogToScreen)
-        // {
-        //     LogToScreenInternal(text, inColor, inTimeToDisplay, inKey);
-        // }
-    //}
+    template <typename FmtType, typename... Types>
+    static void LogInternal(const FmtType& inFormat, bool inLogToConsole, bool inLogToScreen, FColor inColor, float inTimeToDisplay, int32 inKey, Types... inArgs)
+    {
+        auto text = FString::Printf(inFormat, inArgs...);
+
+        if (inLogToConsole)
+        {
+            LogToConsoleInternal(text);
+        }
+
+        if (inLogToScreen)
+        {
+            LogToScreenInternal(text, inColor, inTimeToDisplay, inKey);
+        }
+    }
 }

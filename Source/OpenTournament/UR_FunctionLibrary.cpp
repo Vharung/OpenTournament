@@ -1,36 +1,25 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_FunctionLibrary.h"
 
-#include <Components/SkeletalMeshComponent.h>
-#include <Components/SkinnedMeshComponent.h>
-#include <UObject/UObjectIterator.h>
-
-#include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
-#include "Animation/AnimInstance.h"
-#include "Animation/AnimMontage.h"
-#include "Components/MeshComponent.h"
-#include "Components/PanelWidget.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Components/Widget.h"
 #include "Engine/Engine.h"
 #include "GameFramework/GameStateBase.h"
 #include "Internationalization/Regex.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 
-#include "UR_Character.h"
 #include "UR_GameModeBase.h"
 #include "UR_PlayerController.h"
-#include "UR_PlayerInput.h"
 #include "UR_PlayerState.h"
-#include "UR_Weapon.h"
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(UR_FunctionLibrary)
+#include "UR_Character.h"
+#include "UR_PlayerInput.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -54,23 +43,31 @@ AUR_GameModeBase* UUR_FunctionLibrary::GetGameModeDefaultObject(const UObject* W
     return GetGameModeDefaultObject<AUR_GameModeBase>(WorldContextObject);
 }
 
-FColor UUR_FunctionLibrary::GetPlayerDisplayTextColor(APlayerState* PS)
+FColor UUR_FunctionLibrary::GetPlayerDisplayTextColor(const APlayerState* PS)
 {
     if (!PS)
     {
-        return FColorList::White;
+        return FColorList::Green;
     }
     else if (PS->IsOnlyASpectator())
     {
         return GetSpectatorDisplayTextColor();
     }
-    else if (AUR_PlayerState* URPlayerState = Cast<AUR_PlayerState>(PS))
-    {
-        return URPlayerState->GetColor().ToFColor(true);
-    }
     else
     {
-        return FColorList::White;	//???
+        const AUR_PlayerState* URPlayerState = Cast<AUR_PlayerState>(PS);
+        if (URPlayerState)
+        {
+            //TODO: if team game, return team color, something like URPS->Team->GetDisplayTextColor();
+
+            //TODO: if non team game, return player's color ? if any ? or white ?
+
+            return FColorList::Red;
+        }
+        else
+        {
+            return FColorList::Green;	//???
+        }
     }
 }
 
@@ -142,27 +139,18 @@ bool UUR_FunctionLibrary::IsKeyMappedToAxis(const FKey& Key, FName AxisName, flo
 
 AUR_PlayerController* UUR_FunctionLibrary::GetLocalPlayerController(const UObject* WorldContextObject)
 {
-    return GetLocalPC<AUR_PlayerController>(WorldContextObject);
-}
-
-APlayerController* UUR_FunctionLibrary::GetLocalPC(const UObject* WorldContextObject)
-{
     if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
     {
-        ensureMsgf(!World->IsNetMode(NM_DedicatedServer), TEXT("GetLocalPC() called on DedicatedServer is recipe for disaster"));
-        return World->GetFirstPlayerController<APlayerController>();
+        return World->GetFirstPlayerController<AUR_PlayerController>();
     }
+
     return nullptr;
 }
 
 bool UUR_FunctionLibrary::IsLocallyViewed(const AActor* Other)
 {
-    if (Other && !Other->IsNetMode(NM_DedicatedServer))
-    {
-        auto PC = GetLocalPC<APlayerController>(Other);
-        return PC && PC->GetViewTarget() == Other;
-    }
-    return false;
+    AUR_PlayerController* PC = GetLocalPlayerController(Other);
+    return PC && PC->GetViewTarget() == Other;
 }
 
 bool UUR_FunctionLibrary::IsViewingFirstPerson(const AUR_Character* Other)
@@ -209,34 +197,15 @@ UFXSystemComponent* UUR_FunctionLibrary::SpawnEffectAtLocation(const UObject* Wo
     return nullptr;
 }
 
-UFXSystemComponent* UUR_FunctionLibrary::SpawnEffectAttached(UFXSystemAsset* Template, const FTransform& Transform, USceneComponent* AttachToComponent, FName AttachPointName, EAttachLocation::Type LocationType,
-                                                             bool bAutoDestroy, bool bAutoActivate)
+UFXSystemComponent* UUR_FunctionLibrary::SpawnEffectAttached(UFXSystemAsset* Template, const FTransform& Transform, USceneComponent* AttachToComponent, FName AttachPointName, EAttachLocation::Type LocationType, bool bAutoDestroy, bool bAutoActivate)
 {
     if (auto PS = Cast<UParticleSystem>(Template))
     {
-        return UGameplayStatics::SpawnEmitterAttached(PS,
-            AttachToComponent,
-            AttachPointName,
-            Transform.GetLocation(),
-            Transform.GetRotation().Rotator(),
-            Transform.GetScale3D(),
-            LocationType,
-            bAutoDestroy,
-            EPSCPoolMethod::None,
-            bAutoActivate);
+        return UGameplayStatics::SpawnEmitterAttached(PS, AttachToComponent, AttachPointName, Transform.GetLocation(), Transform.GetRotation().Rotator(), Transform.GetScale3D(), LocationType, bAutoDestroy, EPSCPoolMethod::None, bAutoActivate);
     }
     else if (auto NS = Cast<UNiagaraSystem>(Template))
     {
-        return UNiagaraFunctionLibrary::SpawnSystemAttached(NS,
-            AttachToComponent,
-            AttachPointName,
-            Transform.GetLocation(),
-            Transform.GetRotation().Rotator(),
-            Transform.GetScale3D(),
-            LocationType,
-            bAutoDestroy,
-            ENCPoolMethod::None,
-            bAutoActivate);
+        return UNiagaraFunctionLibrary::SpawnSystemAttached(NS, AttachToComponent, AttachPointName, Transform.GetLocation(), Transform.GetRotation().Rotator(), Transform.GetScale3D(), LocationType, bAutoDestroy, ENCPoolMethod::None, bAutoActivate);
     }
     return nullptr;
 }
@@ -260,7 +229,7 @@ UAnimMontage* UUR_FunctionLibrary::GetCurrentActiveMontageInSlot(UAnimInstance* 
     }
     bIsValid = false;
     Weight = 0.f;
-    return nullptr;
+    return NULL;
 }
 
 
@@ -268,205 +237,11 @@ void UUR_FunctionLibrary::ParseFloatTextInput(FText Text, bool& bIsNumeric, floa
 {
     FString Str = Text.ToString().TrimStartAndEnd().Replace(TEXT(" "), TEXT("")).Replace(TEXT(","), TEXT("."));
     bIsNumeric = Str.IsNumeric();
-    OutValue = bIsNumeric ? FCString::Atof(*Str) : 0.f;
+    OutValue = bIsNumeric ? UKismetStringLibrary::Conv_StringToFloat(Str) : 0.f;
 }
 
 
 bool UUR_FunctionLibrary::IsOnlySpectator(APlayerState* PS)
 {
     return PS->IsOnlyASpectator();
-}
-
-float UUR_FunctionLibrary::GetFloatOption(const FString& Options, const FString& Key, float DefaultValue)
-{
-    const FString InOpt = UGameplayStatics::ParseOption(Options, Key);
-    if (!InOpt.IsEmpty())
-    {
-        return FCString::Atof(*InOpt);
-    }
-    return DefaultValue;
-}
-
-bool UUR_FunctionLibrary::FindChildrenWidgetsByClass(UWidget* Target, TSubclassOf<UWidget> WidgetClass, TArray<UWidget*>& OutWidgets, bool bRecursive)
-{
-    if (!WidgetClass)
-    {
-        return false;
-    }
-
-    // Only PanelWidget subclasses can have children
-    UPanelWidget* Panel = Cast<UPanelWidget>(Target);
-    if (!Panel)
-    {
-        return false;
-    }
-
-    int32 LengthBefore = OutWidgets.Num();
-
-    int32 Count = Panel->GetChildrenCount();
-    for (int32 i = 0; i < Count; i++)
-    {
-        UWidget* Child = Panel->GetChildAt(i);
-
-        if (Child && Child->IsA(WidgetClass))
-        {
-            OutWidgets.Add(Child);
-        }
-
-        if (bRecursive)
-        {
-            FindChildrenWidgetsByClass(Child, WidgetClass, OutWidgets, true);
-        }
-    }
-
-    return OutWidgets.Num() > LengthBefore;
-}
-
-void UUR_FunctionLibrary::ClearOverrideMaterials(UMeshComponent* MeshComp)
-{
-    if (MeshComp)
-    {
-        MeshComp->EmptyOverrideMaterials();
-    }
-}
-
-void UUR_FunctionLibrary::OverrideAllMaterials(UMeshComponent* MeshComp, UMaterialInterface* Material)
-{
-    if (MeshComp)
-    {
-        int32 Num = MeshComp->GetNumMaterials();
-        for (int32 i = 0; i < Num; i++)
-        {
-            MeshComp->SetMaterial(i, Material);
-        }
-    }
-}
-
-void UUR_FunctionLibrary::GetAllWeaponClasses(TSubclassOf<AUR_Weapon> InClassFilter, TArray<TSubclassOf<AUR_Weapon>>& OutWeaponClasses)
-{
-    // NOTE: this is temporary. We will need proper asset registry management later on.
-    for (TObjectIterator<UClass> Itr; Itr; ++Itr)
-    {
-        UClass* Class = *Itr;
-        if ((InClassFilter && Class->IsChildOf(InClassFilter)) || Class->IsChildOf<AUR_Weapon>())
-        {
-#if WITH_EDITOR
-            if (Class->HasAnyFlags(RF_Transient) && Class->HasAnyClassFlags(CLASS_CompiledFromBlueprint))
-            {
-                continue;
-            }
-#endif
-            OutWeaponClasses.Add(Class);
-        }
-    }
-}
-
-void UUR_FunctionLibrary::Array_Slice(const TArray<int32>& TargetArray, TArray<int32>& Result, int32 Start, int32 End)
-{
-    check(0);
-}
-
-void UUR_FunctionLibrary::GenericArray_Slice(void* SourceArray, const FArrayProperty* SourceArrayProp, void* ResultArray, const FArrayProperty* ResultArrayProp, int32 Start, int32 End)
-{
-    if (SourceArray && ResultArray)
-    {
-        FScriptArrayHelper SourceArrayHelper(SourceArrayProp, SourceArray);
-        FScriptArrayHelper ResultArrayHelper(ResultArrayProp, ResultArray);
-        ResultArrayHelper.EmptyValues();
-
-        End = (End < 0) ? SourceArrayHelper.Num() : FMath::Min(End, SourceArrayHelper.Num());
-        int32 Count = End - Start;
-        if (Count > 0)
-        {
-            ResultArrayHelper.AddValues(Count);
-            FProperty* InnerProp = SourceArrayProp->Inner;
-            for (int32 i = Start; i < End; i++)
-            {
-                InnerProp->CopySingleValueToScriptVM(ResultArrayHelper.GetRawPtr(i - Start), SourceArrayHelper.GetRawPtr(i));
-            }
-        }
-    }
-}
-
-template <typename T>
-TArray<T> UUR_FunctionLibrary::ArraySlice(const TArray<T>& InArray, int32 Start, int32 End)
-{
-    End = (End < 0) ? InArray.Num() : FMath::Min(End, InArray.Num());
-    TArray<T> Result(FMath::Max(0, End - Start));
-    for (int32 i = Start; i < End; i++)
-    {
-        Result.Add(InArray[i]);
-    }
-    return Result;
-}
-
-bool UUR_FunctionLibrary::ClassImplementsInterface(UClass* TestClass, TSubclassOf<UInterface> Interface)
-{
-    if (TestClass && Interface)
-    {
-        checkf(Interface->IsChildOf(UInterface::StaticClass()), TEXT("Interface parameter %s is not actually an interface."), *Interface->GetName());
-        return TestClass->ImplementsInterface(Interface);
-    }
-    return false;
-}
-
-FGameplayTagContainer UUR_FunctionLibrary::FindChildTags(const FGameplayTagContainer& TagContainer, FGameplayTag TagToMatch)
-{
-    FGameplayTagContainer Result;
-    for (const FGameplayTag& Tag : TagContainer)
-    {
-        if (Tag.MatchesTag(TagToMatch) && !Tag.MatchesTagExact(TagToMatch))
-        {
-            Result.AddTagFast(Tag);
-        }
-    }
-    return Result;
-}
-
-FGameplayTag UUR_FunctionLibrary::FindAnyChildTag(const FGameplayTagContainer& TagContainer, FGameplayTag TagToMatch)
-{
-    for (const FGameplayTag& Tag : TagContainer)
-    {
-        if (Tag.MatchesTag(TagToMatch) && !Tag.MatchesTagExact(TagToMatch))
-        {
-            return Tag;
-        }
-    }
-    return FGameplayTag();
-}
-
-void UUR_FunctionLibrary::RefreshBoneTransforms(USkeletalMeshComponent* SkelMesh)
-{
-    if (SkelMesh && SkelMesh->VisibilityBasedAnimTickOption == EVisibilityBasedAnimTickOption::AlwaysTickPose && !SkelMesh->bRecentlyRendered)
-    {
-        SkelMesh->RefreshBoneTransforms();
-    }
-}
-
-void UUR_FunctionLibrary::RefreshComponentTransforms(USceneComponent* Component)
-{
-    //NOTE: Maybe we need to refresh in reverse order (parent to child), I'm not sure about that.
-    // Don't really have a proper use case to test this for now.
-    for (USceneComponent* Comp = Component; Comp; Comp = Comp->GetAttachParent())
-    {
-        RefreshBoneTransforms(Cast<USkeletalMeshComponent>(Comp));
-    }
-}
-
-void UUR_FunctionLibrary::PropagateOwnerNoSee(USceneComponent* Component, bool bOwnerNoSee)
-{
-    TArray<USceneComponent*> Comps;
-    Component->GetChildrenComponents(true, Comps);
-    Comps.Add(Component);
-    for (USceneComponent* Comp : Comps)
-    {
-        if (auto PrimComp = Cast<UPrimitiveComponent>(Comp))
-        {
-            PrimComp->SetOwnerNoSee(bOwnerNoSee);
-        }
-        else
-        {
-            Comp->MarkRenderStateDirty();
-        }
-    }
 }

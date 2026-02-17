@@ -1,10 +1,11 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
-#include <GameFramework/Actor.h>
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
 
 #include "UR_Type_LiftState.h"
 #include "UR_Lift.generated.h"
@@ -26,10 +27,10 @@ UCLASS()
 class OPENTOURNAMENT_API AUR_Lift : public AActor
 {
     GENERATED_BODY()
-
+    
     /////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
+public:	
+    
     AUR_Lift(const FObjectInitializer& ObjectInitializer);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +120,7 @@ public:
     */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Lift")
     USoundBase* LiftStartSound;
-
+    
     /**
     * Lift is moving
     */
@@ -146,6 +147,5 @@ private:
     UPROPERTY()
     ELiftState LiftState;
 
-    UPROPERTY()
     FTimerHandle ReturnTimerHandle;
 };

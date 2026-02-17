@@ -1,23 +1,14 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UR_FireModeBase.h"
-
-#include "GameFramework/DamageType.h"
-
 #include "UR_FunctionLibrary.h"
 #include "UR_FireModeBasic.generated.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
 class AUR_Projectile;
 class IUR_FireModeBasicInterface;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
 * Stores information about a simulated shot,
@@ -42,11 +33,6 @@ struct FSimulatedShotInfo
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 Seed;
-
-    FSimulatedShotInfo()
-        : Seed(0)
-    {
-    }
 };
 
 /**
@@ -66,31 +52,19 @@ struct FHitscanVisualInfo
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 Seed;
-
-    FHitscanVisualInfo()
-        : Seed(0)
-    {
-    }
 };
 
 
 /**
- *
+ * 
  */
 UCLASS(ClassGroup = (FireMode), Meta = (BlueprintSpawnableComponent))
 class OPENTOURNAMENT_API UUR_FireModeBasic : public UUR_FireModeBase
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
     UUR_FireModeBasic()
-        : bIsHitscan(false)
-        , FireSound(nullptr)
-        , HitscanDamage(0)
-        , BeamTemplate(nullptr)
-        , BeamImpactTemplate(nullptr)
-        , BeamImpactSound(nullptr)
-        , LocalFireTime(0)
     {
         FireInterval = 1.0f;
         HitscanTraceDistance = 10000;
@@ -108,6 +82,7 @@ public:
     bool bIsHitscan;
 
 public:
+
     UPROPERTY(EditAnywhere, Category = "Content")
     USoundBase* FireSound;
 
@@ -136,6 +111,7 @@ public:
     USoundBase* BeamImpactSound;
 
 public:
+
     UPROPERTY(BlueprintReadOnly)
     TScriptInterface<IUR_FireModeBasicInterface> BasicInterface;
 
@@ -146,12 +122,11 @@ public:
     }
 
     virtual void StartFire_Implementation() override;
-
     virtual float GetTimeUntilIdle_Implementation() override;
-
     virtual float GetCooldownStartTime_Implementation() override;
 
 protected:
+
     /**
     * Used to calculate server response time to our ServerFire() call, and adjust fire loop.
     * Owner client only.
@@ -180,6 +155,7 @@ protected:
 
     UFUNCTION()
     void LocalConfirmFired();
+
 };
 
 
@@ -194,6 +170,7 @@ class OPENTOURNAMENT_API IUR_FireModeBasicInterface : public IUR_FireModeBaseInt
     GENERATED_BODY()
 
 public:
+
     /**
     * Simulate a non-hitscan shot on local client.
     * Do not play fire effects here.
@@ -239,4 +216,5 @@ public:
     */
     UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic, BlueprintCallable)
     void PlayHitscanEffects(UUR_FireModeBasic* FireMode, const FHitscanVisualInfo& HitscanInfo);
+
 };

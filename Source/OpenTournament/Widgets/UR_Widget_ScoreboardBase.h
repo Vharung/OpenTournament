@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -6,7 +6,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-
 #include "UR_Widget_ScoreboardBase.generated.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -14,7 +13,7 @@
 /**
  * Scoreboard Base Widget
  */
-UCLASS(Abstract)
+UCLASS()
 class OPENTOURNAMENT_API UUR_Widget_ScoreboardBase : public UUserWidget
 {
     GENERATED_BODY()

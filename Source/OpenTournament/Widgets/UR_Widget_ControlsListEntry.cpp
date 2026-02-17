@@ -1,12 +1,12 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "UR_Widget_ControlsListEntry.h"
 
+#include "Data/UR_Object_KeyBind.h"
 #include "Components/InputKeySelector.h"
 #include "Components/TextBlock.h"
-#include "Data/UR_Object_KeyBind.h"
 
 #include "UR_BasePlayerController.h"
 #include "UR_PlayerInput.h"
@@ -17,8 +17,8 @@ class UUR_Object_KeyBind;
 class UUR_PlayerInput;
 class AUR_BasePlayerController;
 
-UUR_Widget_ControlsListEntry::UUR_Widget_ControlsListEntry(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
+UUR_Widget_ControlsListEntry::UUR_Widget_ControlsListEntry(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer)
 {
     IsSelectingKey = false;
 }
@@ -28,8 +28,8 @@ UUR_Widget_ControlsListEntry::UUR_Widget_ControlsListEntry(const FObjectInitiali
 void UUR_Widget_ControlsListEntry::NativeConstruct()
 {
     Super::NativeConstruct();
-    EntryKeySelector->OnIsSelectingKeyChanged.AddDynamic(this, &ThisClass::OnEntryKeySelectorIsSelectingKeyChanged);
-    EntryKeySelector->OnKeySelected.AddDynamic(this, &ThisClass::OnEntryKeySelectorKeyChanged);
+    EntryKeySelector->OnIsSelectingKeyChanged.AddDynamic(this, &UUR_Widget_ControlsListEntry::OnEntryKeySelectorIsSelectingKeyChanged);
+    EntryKeySelector->OnKeySelected.AddDynamic(this, &UUR_Widget_ControlsListEntry::OnEntryKeySelectorKeyChanged);
 
     //LOCTABLE_FROMFILE_GAME("KeyBindingStringTable", "KeyBindingStringTable", "OpenTournament/StringTables/ST_KeyBindingNames.csv");
 }
@@ -64,18 +64,22 @@ void UUR_Widget_ControlsListEntry::OnEntryKeySelectorIsSelectingKeyChanged()
     IsSelectingKey = true;
 }
 
-void UUR_Widget_ControlsListEntry::NativeOnListItemObjectSet(UObject* InObject)
+void UUR_Widget_ControlsListEntry::NativeOnListItemObjectSet(UObject * InObject)
 {
     Item = InObject;
     UpdateEntry();
 }
 
-void UUR_Widget_ControlsListEntry::UpdateEntry() const
+void UUR_Widget_ControlsListEntry::UpdateEntry()
 {
-    if (const UUR_Object_KeyBind* KeyBind = Cast<UUR_Object_KeyBind>(Item.Get()))
-    {
-        // TODO: Use proper localization instead
-        EntryName->SetText(FText::FromName(KeyBind->Name));
-        EntryKeySelector->SetSelectedKey(FInputChord(KeyBind->Key));
-    }
+    UUR_Object_KeyBind* KeyBind = Cast<UUR_Object_KeyBind>(Item);
+
+    //EntryName->SetText(FText::FromName((KeyBind->ActionName)));
+
+    // @! TODO Remove hardcoded asset reference
+    //EntryName->SetText(FText::FromStringTable("/Game/OpenTournament/StringTables/ST_KeyBindingNames.ST_KeyBindingNames", KeyBind->Name.ToString()));
+    // I am getting rid of that table! sorry!
+    //TODO: Use proper localization instead
+    EntryName->SetText(FText::FromName(KeyBind->Name));
+    EntryKeySelector->SetSelectedKey(FInputChord(KeyBind->Key));
 }

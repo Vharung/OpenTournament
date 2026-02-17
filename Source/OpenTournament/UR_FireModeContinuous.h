@@ -1,6 +1,4 @@
-// Copyright (c) Open Tournament Games, All Rights Reserved.
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 #pragma once
 
@@ -9,12 +7,8 @@
 #include "UR_FunctionLibrary.h"
 #include "UR_FireModeContinuous.generated.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
 class UAudioComponent;
 class IUR_FireModeContinuousInterface;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
 * NOTE:
@@ -64,21 +58,15 @@ struct FStoredTargetHitCount
 
     UPROPERTY()
     uint8 HitCount;
-
-    FStoredTargetHitCount()
-        : Target(nullptr)
-        , HitCount(0)
-    {
-    }
 };
 
 /**
- *
+ * 
  */
 UCLASS(ClassGroup = (FireMode), Meta = (BlueprintSpawnableComponent))
 class OPENTOURNAMENT_API UUR_FireModeContinuous : public UUR_FireModeBase
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
     UUR_FireModeContinuous()
@@ -106,6 +94,7 @@ public:
     float HitCheckInterval;
 
 public:
+
     UPROPERTY(EditAnywhere, Category = "Content")
     float TraceDistance;
 
@@ -149,6 +138,7 @@ public:
     float AmmoCostAccumulator;
 
 public:
+
     UPROPERTY(BlueprintReadOnly)
     TScriptInterface<IUR_FireModeContinuousInterface> ContinuousInterface;
 
@@ -159,16 +149,13 @@ public:
     }
 
     virtual void RequestStartFire_Implementation() override;
-
     virtual void StartFire_Implementation() override;
-
     virtual void StopFire_Implementation() override;
-
     virtual void SpinDown() override;
-
     virtual float GetTimeUntilIdle_Implementation() override;
 
 protected:
+
     /*
     virtual void BeginPlay() override
     {
@@ -182,6 +169,7 @@ protected:
 
     UPROPERTY()
     float DeltaTimeAccumulator;
+
 };
 
 UINTERFACE(Blueprintable)
@@ -195,6 +183,7 @@ class OPENTOURNAMENT_API IUR_FireModeContinuousInterface : public IUR_FireModeBa
     GENERATED_BODY()
 
 public:
+
     /**
     * Called every HitCheck "tick" (according to HitCheckInterval) on owner client.
     */
@@ -236,4 +225,5 @@ public:
     */
     UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic, BlueprintCallable)
     void StopContinuousEffects(UUR_FireModeContinuous* FireMode);
+
 };

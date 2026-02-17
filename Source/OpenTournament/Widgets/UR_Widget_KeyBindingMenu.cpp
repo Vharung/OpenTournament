@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,9 +18,11 @@ class UUR_PlayerInput;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-UUR_Widget_KeyBindingMenu::UUR_Widget_KeyBindingMenu(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
+UUR_Widget_KeyBindingMenu::UUR_Widget_KeyBindingMenu(const FObjectInitializer& ObjectInitializer) :
+    Super(ObjectInitializer),
+    OwningPlayer(nullptr)
 {
+    
 }
 
 //Should check these again when we decide how our menu system will work
@@ -38,12 +40,9 @@ void UUR_Widget_KeyBindingMenu::OnCloseButtonClicked()
 //TODO: remove
 void UUR_Widget_KeyBindingMenu::OpenMenu()
 {
-    auto OwningPlayer = GetOwningPlayer();
-    if (OwningPlayer)
-    {
-        OwningPlayer->SetInputMode(FInputModeUIOnly());
-        OwningPlayer->bShowMouseCursor = true;
-    }
+    OwningPlayer = GetOwningPlayer();
+    OwningPlayer->SetInputMode(FInputModeUIOnly());
+    OwningPlayer->bShowMouseCursor = true;
     AddToViewport();
 }
 
@@ -51,9 +50,9 @@ void UUR_Widget_KeyBindingMenu::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
 
-    if (CloseButton)
+    if (CloseButton != nullptr)
     {
-        CloseButton->OnClicked.AddDynamic(this, &ThisClass::OnCloseButtonClicked);
+        CloseButton->OnClicked.AddDynamic(this, &UUR_Widget_KeyBindingMenu::OnCloseButtonClicked);
     }
     else
     {
@@ -69,10 +68,7 @@ void UUR_Widget_KeyBindingMenu::CreateKeyBindObject(FName Name, FKey Key)
     NewKeyBind->Name = Name;
     NewKeyBind->Key = Key;
 
-    if (ControlsList)
-    {
-        ControlsList->AddItem(NewKeyBind);
-    }
+    ControlsList->AddItem(NewKeyBind);
 }
 
 void UUR_Widget_KeyBindingMenu::PopulateKeyBindingList()
@@ -80,17 +76,12 @@ void UUR_Widget_KeyBindingMenu::PopulateKeyBindingList()
     const UInputSettings* ProjectDefaults = GetDefault<UInputSettings>();
 
     const AUR_BasePlayerController* PC = Cast<AUR_BasePlayerController>(GetOwningPlayer());
-    const UUR_PlayerInput* UserInputSettings = PC->GetPlayerInput();
-    if (!UserInputSettings)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Missing UserSettings"));
-        return;
-    }
+    UUR_PlayerInput* UserSettings = PC->GetPlayerInput();
 
     TArray<FInputAxisKeyMapping> AxisMappings;
     for (const FName& AxisName : AxisNames)
     {
-        if (UserInputSettings->FindUserAxisMappings(AxisName, AxisMappings))
+        if (UserSettings->FindUserAxisMappings(AxisName, AxisMappings))
         {
             CreateKeyBindObject(AxisName, AxisMappings[0].Key);
         }
@@ -104,7 +95,7 @@ void UUR_Widget_KeyBindingMenu::PopulateKeyBindingList()
     TArray<FInputActionKeyMapping> ActionMappings;
     for (const FName& ActionName : ActionNames)
     {
-        if (UserInputSettings->FindUserActionMappings(ActionName, ActionMappings))
+        if (UserSettings->FindUserActionMappings(ActionName, ActionMappings))
         {
             CreateKeyBindObject(ActionName, ActionMappings[0].Key);
         }

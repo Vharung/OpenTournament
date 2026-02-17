@@ -1,4 +1,4 @@
-// Copyright (c) Open Tournament Project, All Rights Reserved.
+// Copyright (c) 2019-2020 Open Tournament Project, All Rights Reserved.
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -16,18 +16,12 @@
 UCLASS(BlueprintType)
 class OPENTOURNAMENT_API UUR_RichTextDecorator_CustomStyle : public URichTextBlockDecorator
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    virtual TSharedPtr<ITextDecorator> CreateDecorator(URichTextBlock* InOwner) override;
 
-    UFUNCTION(BlueprintPure)
-    static FString DecorateRichString(const FString& InText, bool bColorize, const FColor& Color, const FString& Typeface = TEXT(""), bool bNoEscape = false);
+	virtual TSharedPtr<ITextDecorator> CreateDecorator(URichTextBlock* InOwner) override;
 
-    /** Convenience for FText */
-    UFUNCTION(BlueprintPure)
-    static FText DecorateRichText(const FText& InText, bool bColorize, const FColor& Color, const FString& Typeface = TEXT(""), bool bNoEscape = false)
-    {
-        return FText::FromString(DecorateRichString(InText.ToString(), bColorize, Color, Typeface, bNoEscape));
-    }
+	UFUNCTION(BlueprintPure)
+	static FString DecorateRichText(const FString& InText, bool bColorize, const FColor& Color, const FString& Typeface = TEXT(""), bool bNoEscape = false);
 };
